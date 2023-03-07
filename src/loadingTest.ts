@@ -1,113 +1,90 @@
-import './require';
+import { importer } from './require';
 import * as tsutils from 'tsutils';
 
-window.require.absolute = 'https://cdn.jsdelivr.net/npm/';
-window.require.mocks = {
-  typescript: () => {
-    // window.ts
-    return {
-      Extension: {},
-      SyntaxKind: {},
-    };
+importer.mocks = {
+  '/npm/typescript@4.9.5/+esm': () => {
+    // TODO: use window.ts
+    const ts = importer.importFile(
+      '/npm/@typescript-deploys/monaco-typescript@4.5.1-rc/release/esm/lib/typescriptServices.js/+esm',
+      false
+    );
+    return ts;
   },
-  semver: () => {
+  '/npm/semver@7.3.8/+esm': () => {
     const satisfies = () => true;
-    const major = window.require('semver/functions/major');
+    const major = importer.importFile(
+      '/npm/semver@7.3.8/functions/major'
+    ).default;
     return { satisfies, major };
   },
-  'tsutils/util/util': () => {
+  '/npm/tsutils@3.21.0/+esm': () => {
     return tsutils;
   },
-  '@typescript-eslint/utils@5.54.1/dist/ts-eslint': () => ({}),
-  '@typescript-eslint/utils@5.54.1/dist/eslint-utils/rule-tester/RuleTester':
-    () => ({}),
-  '@typescript-eslint/utils@5.54.1/dist/ts-eslint-scope/analyze': () => {
-    return window.require('eslint-scope/dist/eslint-scope.cjs');
+  '/npm/tsutils@3.21.0/util/util/+esm': () => {
+    return tsutils;
   },
-  path: () => ({}),
-  fs: () => ({}),
+  '/npm/eslint@8.35.0/use-at-your-own-risk/+esm': () => {
+    // TODO: use window.eslint
+    return {
+      builtinRules: {
+        get(_name: string) {
+          return {
+            meta: {
+              schema: {
+                properties: { overrides: { properties: { import: '' } } },
+              },
+            },
+          };
+        },
+      },
+    };
+  },
+  '/npm/globals@13.20.0/+esm': () => {
+    return importer.importFile('/npm/globals@13.20.0/globals.json').default;
+  },
+  '/npm/eslint@8.35.0/+esm': () => {
+    // TODO: use window.ts
+    class Linter {}
+    class RuleTester {}
+    class SourceCode {}
+    return {
+      SourceCode,
+      Linter,
+      RuleTester,
+    };
+  },
+  '/npm/@typescript-eslint/utils@5.54.1/+esm': () => {
+    const utils = importer.importFile(
+      '/npm/@typescript-eslint/utils@5.54.1/dist/index.js/+esm'
+    );
+    return utils.default;
+  },
+  '/npm/debug@4.3.4/+esm': () => {
+    const debug = importer.importFile('/npm/debug@4.3.4/src/browser.js/+esm');
+    return debug.default;
+  },
+  '/npm/@typescript-eslint/typescript-estree@5.54.1/+esm': () => {
+    const astConverter = importer.importFile(
+      '/npm/@typescript-eslint/typescript-estree@5.54.1/dist/ast-converter.js/+esm'
+    );
+    const types = importer.importFile(
+      '/npm/@typescript-eslint/types@5.54.1/+esm'
+    );
+    return {
+      ...types,
+      astConverter: astConverter.astConverter,
+    };
+  },
 };
-window.require.registerMapping([
-  {
-    package: '@typescript-eslint/visitor-keys',
-    version: '5.54.1',
-    path: 'dist/index.min.js',
-  },
-  {
-    package: '@typescript-eslint/scope-manager',
-    version: '5.54.1',
-    path: 'dist/analyze.min.js',
-    directories: [
-      'dist/lib',
-      'dist/referencer',
-      'dist/definition',
-      'dist/scope',
-      'dist/variable',
-    ],
-  },
-  {
-    package: 'eslint-visitor-keys',
-    version: '3.3.0',
-    path: 'dist/eslint-visitor-keys.cjs',
-  },
-  {
-    package: '@typescript-eslint/types',
-    version: '5.54.1',
-    path: 'dist/index.min.js',
-  },
-  {
-    package: '@typescript-eslint/eslint-plugin',
-    version: '5.54.1',
-    path: 'dist/index.min.js',
-    directories: ['dist/rules'],
-  },
-  {
-    package: '@typescript-eslint/utils',
-    version: '5.54.1',
-    path: 'dist/index.min.js',
-    directories: [
-      'dist/ast-utils',
-      'dist/ast-utils/eslint-utils',
-      'dist/eslint-utils',
-      'dist/ts-eslint-scope',
-    ],
-  },
-  {
-    package: '@typescript-eslint/typescript-estree',
-    version: '5.54.1',
-    path: 'dist/ast-converter.min.js',
-    directories: ['dist/ts-estree'],
-  },
-  {
-    package: 'eslint-utils',
-    version: '3.0.0',
-    path: 'index.min.js',
-  },
-  {
-    package: 'eslint-scope',
-    version: '7.1.1',
-    path: 'dist/eslint-scope.cjs',
-  },
-  {
-    package: 'estraverse',
-    version: '5.3.0',
-    path: 'estraverse.min.js',
-  },
-  {
-    package: 'esrecurse',
-    version: '4.3.0',
-    path: 'esrecurse.min.js',
-  },
+
+const result = importer.importFiles([
+  '/npm/@typescript-eslint/scope-manager',
+  '/npm/@typescript-eslint/visitor-keys/dist/visitor-keys',
+  '/npm/@typescript-eslint/typescript-estree@5.54.1/dist/ast-converter.js',
+  '/npm/@typescript-eslint/typescript-estree@5.54.1/dist/create-program/getScriptKind',
+  // '/npm/@typescript-eslint/eslint-plugin' // TODO: fix me
 ]);
 
-const scopeManager = window.require('@typescript-eslint/scope-manager');
-const visitorKeys = window.require(
-  '@typescript-eslint/visitor-keys/dist/visitor-keys'
-);
-const typescriptEstree = window.require('@typescript-eslint/typescript-estree');
-const getScriptKind = window.require(
-  '@typescript-eslint/typescript-estree/dist/create-program/getScriptKind'
-);
-const rules = window.require('@typescript-eslint/eslint-plugin');
+console.log(result);
 
-export { rules, getScriptKind, typescriptEstree, visitorKeys, scopeManager };
+export {};

@@ -1,137 +1,115 @@
-interface RequireMapping {
-  package: string;
-  version: string;
-  path: string;
-  directories?: string[];
-}
+class Importer {
+  cache: Record<string, unknown> = {};
+  mocks: Record<string, () => unknown> = {};
 
-interface Require {
-  (url: string): Record<string, unknown>;
-  registerMapping: (mapping: RequireMapping[]) => void;
-  cache: Record<string, unknown>;
-  mapping: Record<string, string>;
-  absolute: string;
-  mocks: Record<string, () => unknown>;
-}
+  readonly absolute = 'https://cdn.jsdelivr.net';
 
-function isValidExtension(url: string): boolean {
-  const lowerCaseUrl = url.toLowerCase();
+  isValidExtension(url: string): boolean {
+    const lowerCaseUrl = url.toLowerCase();
 
-  return /\.(js|cjs|json)$/.test(lowerCaseUrl);
-}
+    return /(\/\+esm|\.json)$/.test(lowerCaseUrl);
+  }
 
-const requireRelative = function (parent: string): (url: string) => unknown {
-  return function (url: string): unknown {
-    if (url.startsWith('.')) {
-      const parentUrl = parent.split('/');
-      if (isValidExtension(parent)) {
-        parentUrl.pop();
-      }
-      const urlParts = url.split('/');
-      for (let i = 0; i < urlParts.length; i++) {
-        if (urlParts[i] === '..') {
-          parentUrl.pop();
-        } else if (urlParts[i] !== '.') {
-          parentUrl.push(urlParts[i]);
+  importFile(url: string, useCache = true): any {
+    if (url in this.mocks) {
+      return this.mocks[url]();
+    }
+    if (!this.isValidExtension(url)) {
+      url += '/+esm';
+    }
+    let exports = this.cache[url];
+    if (!exports) {
+      try {
+        exports = {};
+        let source = this.cachedRequest(url, useCache);
+        if (url.endsWith('.json')) {
+          exports = JSON.parse(source);
+        } else {
+          // according to node.js modules, create a module object
+          const module = { id: url, uri: url, exports: exports };
+          // create a Fn with module code, and 3 params: require, exports & module
+          const anonFn = new Function('require', 'exports', 'module', source);
+          // call the Fn, Execute the module code
+          anonFn(this.importFile.bind(this), exports, module);
+          // cache obj exported by module
+          exports = module.exports;
         }
+        this.cache[url] = exports;
+      } catch (err) {
+        console.error(`Error loading module ${this.absolute + url}: ${err}`);
+        throw err;
       }
-      url = parentUrl.join('/');
     }
-    return window.require(url);
-  };
-};
-
-function registerMapping(mappings: RequireMapping[]) {
-  for (const mapping of mappings) {
-    const url = `${mapping.package}@${mapping.version}`;
-    for (const dir of mapping.directories || []) {
-      window.require.mapping[
-        mapping.package + '/' + dir
-      ] = `${url}/${dir}/index.min.js`;
-      window.require.mapping[url + '/' + dir] = `${url}/${dir}/index.min.js`;
-    }
-    window.require.mapping[mapping.package] = url + '/' + mapping.path;
-  }
-}
-
-function cachedRequest(url: string) {
-  const cache = localStorage.getItem(`require-cache--${url}`);
-  if (cache) {
-    return cache;
+    return exports;
   }
 
-  const X = new XMLHttpRequest();
-  X.open('GET', window.require.absolute + url, false);
-  X.send();
-  if (X.status && X.status !== 200) {
-    throw new Error(X.statusText);
-  }
-
-  const source = X.responseText;
-  localStorage.setItem(`require-cache--${url}`, source);
-  return source;
-}
-
-const require = function (url: string): unknown {
-  console.log(url);
-  if (url in window.require.mocks) {
-    return window.require.mocks[url]();
-  }
-  if (url in window.require.mapping) {
-    url = window.require.mapping[url];
-  }
-  if (!isValidExtension(url)) {
-    url += '.js';
-  }
-  let exports = window.require.cache[url];
-  if (!exports) {
-    try {
-      exports = {};
-      let source = cachedRequest(url);
-      if (url.endsWith('.json')) {
-        exports = JSON.parse(source);
-      } else {
-        // fix (if saved form for Chrome Dev Tools)
-        if (source.substr(0, 10) === '(function(') {
-          let moduleStart = source.indexOf('{');
-          const moduleEnd = source.lastIndexOf('})');
-          const CDTComment = source.indexOf('//@ ');
-          if (CDTComment > -1 && CDTComment < moduleStart + 6)
-            moduleStart = source.indexOf('\n', CDTComment);
-          source = source.slice(moduleStart + 1, moduleEnd - 1);
+  fixESMFiles(source: string, url: string) {
+    source += `\n\n//@ sourceURL=${this.absolute}${url}`;
+    return source
+      .replace(
+        /import\s+([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
+        (match, name, url) => {
+          return `const ${name} = require('${url}');`;
         }
-        // fix, add comment to show source on Chrome Dev Tools
-        source = `//@ sourceURL=${window.require.absolute}${url}\n${source}`;
-        // according to node.js modules, create a module object
-        const module = { id: url, uri: url, exports: exports };
-        // create a Fn with module code, and 3 params: require, exports & module
-        const anonFn = new Function('require', 'exports', 'module', source);
-        // call the Fn, Execute the module code
-        anonFn(requireRelative(url), exports, module);
-        // cache obj exported by module
-        exports = module.exports;
-      }
-      window.require.cache[url] = exports;
-    } catch (err) {
-      console.error(`Error loading module ${url}: ${err}`);
-      throw err;
-    }
+      )
+      .replace(
+        /import\s*\*\s*as\s*([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
+        (match, name, url) => {
+          return `const ${name} = require('${url}');`;
+        }
+      )
+      .replace(
+        /export\s+default\s*([A-Za-z$_][^\s;]*)/g,
+        (match, name: string) => {
+          if (name === 'null') {
+            return '';
+          }
+          return `exports.default = ${name};`;
+        }
+      )
+      .replace(/export\s*{([^}]+)}[\s;]*/g, (match, names: string) => {
+        return names
+          .split(',')
+          .map((name) => {
+            const exportParts =
+              /([A-Za-z$_]\S*)\s+as\s+([A-Za-z$_][^\s;]*)/.exec(name);
+            if (exportParts) {
+              return `exports.${exportParts[2].trim()} = ${exportParts[1].trim()};`;
+            }
+            return `exports.${name.trim()} = ${name.trim()};`;
+          })
+          .join('\n');
+      });
   }
-  return exports;
-};
 
-declare global {
-  interface Window {
-    require: Require;
+  cachedRequest(url: string, useCache = true) {
+    if (useCache) {
+      const cache = window.localStorage.getItem(`require-cache--${url}`);
+      if (cache) {
+        return cache;
+      }
+    }
+
+    console.log('Loading file:', this.absolute + url);
+
+    const X = new XMLHttpRequest();
+    X.open('GET', this.absolute + url, false);
+    X.send();
+    if (X.status && X.status !== 200) {
+      throw new Error(X.statusText);
+    }
+
+    const source = this.fixESMFiles(X.responseText, url);
+
+    if (useCache) {
+      window.localStorage.setItem(`require-cache--${url}`, source);
+    }
+    return source;
+  }
+
+  importFiles(urls: string[], useCache = true): any[] {
+    return urls.map((url) => this.importFile(url, useCache));
   }
 }
 
-// @ts-ignore
-window.require = require;
-window.require.registerMapping = registerMapping;
-window.require.cache = {};
-window.require.mapping = {};
-window.require.mocks = {};
-window.require.absolute = '';
-
-export {};
+export const importer = new Importer();

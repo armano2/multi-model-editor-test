@@ -5,8 +5,7 @@ import App from './components/App';
 
 import './styles.css';
 
-// import * as loadingTest from './loadingTest';
-// console.log(loadingTest);
+import './loadingTest';
 
 const rootElement = document.getElementById('root')!;
 const root = createRoot(rootElement);
