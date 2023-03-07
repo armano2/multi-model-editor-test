@@ -1,0 +1,44 @@
+.ResizeHandleOuter {
+  --resize-border-color: hsla(0, 0%, 100%, 0);
+
+  flex: 0 0 11px;
+  border-left: 5px solid var(--resize-border-color);
+  border-right: 5px solid var(--resize-border-color);
+  background-clip: padding-box;
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  outline: none;
+  opacity: 0.2;
+  transition: border-color 0.2s linear;
+}
+
+.ResizeHandleOuter[data-resize-handle-active],
+.ResizeHandleOuter:hover {
+  --resize-border-color: var(--ifm-color-emphasis-700);
+}
+
+@media (max-width: 500px) {
+  .ResizeHandleOuter {
+    flex: 0 0 10px;
+  }
+}
+
+.ResizeHandleInner {
+  flex: 1;
+  background-color: var(--ifm-color-emphasis-700);
+  transition: background-color 0.2s linear;
+  position: relative;
+}
+
+.ResizeHandleInner::after {
+  height: 1px;
+  width: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  position: absolute;
+  left: calc(50% - 2px);
+  top: calc(50% - 2px);
+}
