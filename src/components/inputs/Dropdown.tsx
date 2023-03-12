@@ -1,4 +1,6 @@
-import React from "react";
+import React from 'react';
+
+import styles from './Dropdown.module.css';
 
 export interface DropdownOption<T> {
   readonly value: T;
@@ -17,13 +19,14 @@ function Dropdown<T extends boolean | string | number>(
   props: DropdownProps<T>
 ): JSX.Element {
   const options: DropdownOption<T>[] = props.options.map((option) =>
-    typeof option !== "object"
+    typeof option !== 'object'
       ? { label: String(option), value: option }
       : option
   );
 
   return (
     <select
+      className={styles.dropdown}
       name={props.name}
       disabled={props.disabled}
       value={String(props.value)}

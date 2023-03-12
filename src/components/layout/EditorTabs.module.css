@@ -2,16 +2,16 @@
   display: flex;
   justify-content: space-between;
   background: var(--playground-main-color);
-  border-bottom: 1px solid var(--playground-secondary-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
 .tabStyle {
-  border: none;
-  border-right: 1px solid var(--playground-secondary-color);
-  background: var(--playground-main-color);
-  color: var(--ifm-color-emphasis-700);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+  --ifm-button-padding-horizontal: 1rem;
+  --ifm-button-background-color: var(--ifm-background-surface-color);
+  --ifm-button-color: var(--ifm-color-emphasis-700);
+  --ifm-button-border-color: var(--ifm-color-emphasis-200);
+
+  font-size: 0.75rem;
 }
 
 .tabStyle svg {
@@ -19,10 +19,12 @@
 }
 
 .tabStyle:hover {
-  background: var(--playground-secondary-color);
+  --ifm-button-background-color: var(--playground-secondary-color);
 }
 
 .tabStyle:disabled {
-  background: var(--playground-secondary-color);
-  color: var(--ifm-color-emphasis-900);
+  --ifm-button-background-color: var(--playground-secondary-color);
+  --ifm-button-color: var(--ifm-color-emphasis-900);
+
+  opacity: 1;
 }

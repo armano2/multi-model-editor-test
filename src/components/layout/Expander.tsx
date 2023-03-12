@@ -1,9 +1,9 @@
-import { useToggle } from 'react-use';
 import clsx from 'clsx';
 import React from 'react';
+import { useToggle } from 'react-use';
 
-import styles from './Expander.module.css';
 import { ReactComponent as ArrowIcon } from '../../icons/arrow.svg';
+import styles from './Expander.module.css';
 
 export interface ExpanderProps {
   readonly children?: React.ReactNode;

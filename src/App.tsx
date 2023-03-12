@@ -1,5 +1,6 @@
 import React from 'react';
-import PlaygroundRoot from './playground/PlaygroundRoot';
+
+import PlaygroundRoot from './components/playground/PlaygroundRoot';
 
 function App(): JSX.Element {
   return <PlaygroundRoot />;

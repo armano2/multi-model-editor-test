@@ -1,6 +1,3 @@
-.playgroundRoot {
-}
-
 .playgroundMenu {
   width: 100%;
 }
@@ -11,8 +8,24 @@
   flex-direction: column;
 }
 
-.playgroundInfo {
+.playgroundInfoContainer {
   width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: var(--code-editor-bg);
+}
+
+.playgroundInfoHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.playgroundInfo {
+  word-wrap: normal;
+  width: 100%;
+  position: relative;
+  padding: 5px 0;
 }
 
 .panelGroup {
@@ -29,72 +42,45 @@
 .PanelRow {
   display: flex;
 }
+
 .PanelColumn {
   flex-direction: column;
 }
+
 .PanelRow {
   flex-direction: row;
 }
 
-.ResizeHandleOuter {
-  flex: 0 0 1.75rem;
+.PanelResizeHandle {
+  --resize-border-color: var(--code-editor-bg);
+  --resize-background-color: var(--ifm-color-emphasis-200);
+
+  flex: 0 0 11px;
+  background-clip: padding-box;
   display: flex;
   justify-content: stretch;
   align-items: stretch;
-  padding: 0.5rem;
   outline: none;
-
-  --background-color: transparent;
+  transition: border-color 0.2s linear, background-color 0.2s linear;
+  background-color: var(--resize-background-color);
+  border-color: var(--resize-border-color);
+  border-style: solid;
+  border-width: 0 5px;
 }
-.ResizeHandleOuter[data-resize-handle-active],
-.ResizeHandleInner[data-collapsed] {
-  --background-color: var(--color-solid-resize-bar);
+
+.PanelResizeHandle[data-panel-group-direction='vertical'] {
+  flex-direction: column;
+  border-width: 5px 0;
+}
+
+.PanelResizeHandle[data-resize-handle-active],
+.PanelResizeHandle:hover {
+  --resize-border-color: var(--ifm-color-emphasis-200);
+  --resize-background-color: var(--ifm-color-emphasis-300);
 }
 
 @media (max-width: 500px) {
-  .ResizeHandleOuter {
-    flex: 0 0 2.5rem;
+  .PanelResizeHandle {
+    flex: 0 0 10px;
   }
-}
-
-.ResizeHandleInner {
-  flex: 1;
-  border-radius: 0.75rem;
-  background-color: var(--background-color);
-  transition: background-color 0.2s linear;
-  position: relative;
-}
-
-.ResizeHandleInner::after {
-  height: 1rem;
-  width: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  color: var(--color-solid-resize-bar);
-  position: absolute;
-  left: calc(50% - 0.5rem);
-  top: calc(50% - 0.5rem);
-}
-
-.HorizontalIcon,
-.VerticalIcon {
-  color: var(--color-solid-resize-bar);
-  position: absolute;
-  left: calc(50% - 0.5rem);
-  top: calc(50% - 0.5rem);
-}
-
-.ResizeHandleOuter[data-panel-group-direction='horizontal'] .HorizontalIcon,
-.ResizeHandleOuter[data-panel-group-direction='vertical'] .VerticalIcon {
-  display: block;
-}
-.ResizeHandleOuter[data-panel-group-direction='vertical'] .HorizontalIcon,
-.ResizeHandleOuter[data-panel-group-direction='horizontal'] .VerticalIcon {
-  display: none;
-}
-.ResizeHandleOuter[data-resize-handle-active] .HorizontalIcon,
-.ResizeHandleOuter[data-resize-handle-active] .VerticalIcon {
-  display: none;
 }

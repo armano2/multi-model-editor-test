@@ -1,3 +1,6 @@
+import type { TSESLint } from '@typescript-eslint/utils';
+import type * as ts from 'typescript';
+
 export interface ErrorItem {
   message: string;
   location: string;
@@ -12,12 +15,29 @@ export interface ErrorGroup {
   items: ErrorItem[];
 }
 
-export interface LintCodeAction {
-  message: string;
-  code?: string | null;
-  isPreferred: boolean;
-  fix: {
-    range: Readonly<[number, number]>;
-    text: string;
+export type EslintRC = Record<string, unknown> & {
+  rules: TSESLint.Linter.RulesRecord;
+  parserOptions?: {
+    sourceType?: TSESLint.SourceType;
   };
+};
+
+export type TSConfig = Record<string, unknown> & {
+  compilerOptions: Record<string, unknown>;
+};
+
+export type ShowASTOptions = false | 'ts' | 'es' | 'scope';
+
+export interface ConfigModel {
+  sourceType?: TSESLint.SourceType;
+  eslintrc: string;
+  tsconfig: string;
+  code: string;
+  code2: string;
+  ts: string;
+  tse: string;
+  showAST?: ShowASTOptions;
 }
+
+export type PlaygroundSystem = ts.System &
+  Required<Pick<ts.System, 'watchFile' | 'watchDirectory' | 'deleteFile'>>;

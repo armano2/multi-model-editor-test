@@ -1,13 +1,21 @@
 import clsx from 'clsx';
-import type Monaco from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import React, { useEffect, useState } from 'react';
 
+import Link from '../inputs/Link';
+import type { InfoBlockProps } from '../layout/InfoBlock';
+import InfoBlock from '../layout/InfoBlock';
 import styles from './ErrorsViewer.module.css';
 import type { ErrorGroup, ErrorItem } from './types';
-import InfoBlock, { InfoBlockProps } from '../layout/InfoBlock';
 
 export interface ErrorsViewerProps {
   readonly value?: ErrorGroup[] | Error;
+}
+
+export interface ErrorViewerProps {
+  readonly value: Error;
+  readonly title: string;
+  readonly type: InfoBlockProps['type'];
 }
 
 export interface ErrorBlockProps {
@@ -59,9 +67,9 @@ function ErrorBlock({
   return (
     <InfoBlock type={severityClass(item.severity)}>
       <div className={clsx(!!item.fixer && styles.fixerContainer)}>
-        <div>
+        <pre className={styles.errorPre}>
           {item.message} {item.location}
-        </div>
+        </pre>
         {item.fixer && (
           <FixButton
             disabled={isLocked}
@@ -74,7 +82,7 @@ function ErrorBlock({
         <div>
           {item.suggestions.map((fixer, index) => (
             <div
-              key={index}
+              key={index.toString()}
               className={clsx(styles.fixerContainer, styles.fixer)}
             >
               <span>&gt; {fixer.message}</span>
@@ -91,7 +99,30 @@ function ErrorBlock({
   );
 }
 
-function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
+export function ErrorViewer({
+  value,
+  title,
+  type,
+}: ErrorViewerProps): JSX.Element {
+  return (
+    <div className={styles.list}>
+      <div className="margin-top--md">
+        <InfoBlock type={type}>
+          <div className={styles.fixerContainer}>
+            <h4>{title}</h4>
+          </div>
+          {type === 'danger' ? (
+            <pre className={styles.errorPre}>{value?.stack}</pre>
+          ) : (
+            value.message
+          )}
+        </InfoBlock>
+      </div>
+    </div>
+  );
+}
+
+export function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
   const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
@@ -99,16 +130,7 @@ function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
   }, [value]);
 
   if (value && !Array.isArray(value)) {
-    return (
-      <div className={styles.list}>
-        <div className="margin-top--sm">
-          <InfoBlock type="danger">
-            <h4>ESLint internal error</h4>
-            {value?.stack}
-          </InfoBlock>
-        </div>
-      </div>
-    );
+    return <ErrorViewer type="danger" title="Internal error" value={value} />;
   }
 
   return (
@@ -122,19 +144,18 @@ function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
                 {uri && (
                   <>
                     {' - '}
-                    <a href={uri} target="_blank">
+                    <Link href={uri} target="_blank">
                       docs
-                    </a>
+                    </Link>
                   </>
                 )}
               </h4>
               {items.map((item, index) => (
-                <div className="margin-bottom--sm">
+                <div className="margin-bottom--sm" key={index.toString()}>
                   <ErrorBlock
                     isLocked={isLocked}
                     setIsLocked={setIsLocked}
                     item={item}
-                    key={index}
                   />
                 </div>
               ))}
@@ -151,5 +172,3 @@ function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
     </div>
   );
 }
-
-export default ErrorsViewer;

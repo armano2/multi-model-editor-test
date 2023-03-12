@@ -1,76 +1,62 @@
-import React, { useState, useRef } from 'react';
-import Editor, { loader } from '@monaco-editor/react';
+import { loader } from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';
-import { EditorFile } from './config';
+import React, { useRef, useState } from 'react';
 import { useMount } from 'react-use';
-import useColorMode from '../hooks/useColorMode';
-import type { ErrorGroup } from './types';
-import { parseMarkers } from './utils';
+
+import { type EslintUtilsModule, importEslintUtils } from '../importer';
 import Loader from '../layout/Loader';
+import type { UpdateModel } from '../linter/types';
+import PlaygroundLoaded from './PlaygroundLoaded';
+import type { ErrorGroup, PlaygroundSystem } from './types';
 
 export interface PlaygroundProps {
-  readonly file: EditorFile;
+  readonly activeFile: string;
   readonly tsVersion: string;
+  readonly tsEsVersion: string;
+  readonly system: PlaygroundSystem;
   readonly onValidate: (markers: ErrorGroup[]) => void;
+  readonly onUpdate: (model: UpdateModel) => void;
+  readonly selectedRange?: [number, number];
 }
 
-function PlaygroundEditor({ file, tsVersion, onValidate }: PlaygroundProps) {
+function PlaygroundEditor(props: PlaygroundProps): JSX.Element {
   const [isLoading, setLoading] = useState<boolean>(true);
-  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor>();
-  const [_monaco, setMonaco] = useState(() => loader.__getMonacoInstance());
-  const [colorMode] = useColorMode();
+  const monaco = useRef<typeof Monaco>();
+  const utils = useRef<EslintUtilsModule>();
 
   useMount(() => {
     loader.config({
       paths: {
-        vs: `https://typescript.azureedge.net/cdn/${tsVersion}/monaco/min/vs`,
+        vs: `https://typescript.azureedge.net/cdn/${props.tsVersion}/monaco/min/vs`,
       },
     });
 
-    const cancelable = loader.init();
-    cancelable.then((monaco) => {
-      setMonaco(monaco);
-
-      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.ES2020,
+    // This has to be executed in proper order
+    loader
+      .init()
+      .then((instance: typeof Monaco) => {
+        monaco.current = instance;
+        return importEslintUtils(props.tsEsVersion);
+      })
+      .then((instance) => {
+        utils.current = instance;
+        setLoading(false);
+      })
+      .catch((e) => {
+        // eslint-disable-next-line no-console
+        console.log('Unable to initialize editor', e);
       });
-      setLoading(false);
-    });
   });
 
-  if (isLoading) {
+  if (isLoading || !monaco.current || !utils.current) {
     return <Loader />;
   }
 
-  const onEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
-
-    editor.updateOptions({
-      minimap: {
-        enabled: false,
-      },
-      fontSize: 13,
-      wordWrap: 'off',
-      scrollBeyondLastLine: false,
-      smoothScrolling: true,
-      autoIndent: 'full',
-      formatOnPaste: true,
-      formatOnType: true,
-      wrappingIndent: 'same',
-      hover: { above: false },
-    });
-  };
-
   return (
-    <Editor
-      theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
-      path={file.name}
-      defaultLanguage={file.language}
-      defaultValue={file.value}
-      onMount={onEditorDidMount}
-      onValidate={(markers) => {
-        onValidate(parseMarkers(markers));
-      }}
+    <PlaygroundLoaded
+      monaco={monaco.current}
+      utils={utils.current}
+      {...props}
     />
   );
 }

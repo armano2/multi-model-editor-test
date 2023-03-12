@@ -1,5 +1,5 @@
-import { useLocalStorage, useMedia } from 'react-use';
 import { useEffect } from 'react';
+import { useLocalStorage, useMedia } from 'react-use';
 
 export type SupportedTheme = 'dark' | 'light';
 
@@ -16,8 +16,8 @@ function useColorMode(): UseColorModeType {
   );
 
   useEffect(() => {
-    const callback = (e: CustomEvent) => {
-      setColorMode(e.detail === 'dark' ? 'dark' : 'light');
+    const callback = (e: Event): void => {
+      setColorMode((e as CustomEvent).detail === 'dark' ? 'dark' : 'light');
     };
 
     window.addEventListener('themeChanged', callback);
@@ -25,11 +25,11 @@ function useColorMode(): UseColorModeType {
     return () => {
       window.removeEventListener('themeChanged', callback);
     };
-  }, []);
+  }, [setColorMode]);
 
   return [
     colorMode!,
-    (theme) => {
+    (theme): void => {
       setColorMode(theme);
       window.dispatchEvent(new CustomEvent('themeChanged', { detail: theme }));
     },

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import styles from './InputLabel.module.css';
 
 export interface InputLabelProps {
@@ -6,7 +7,7 @@ export interface InputLabelProps {
   readonly children: React.ReactNode;
 }
 
-function InputLabel(props: InputLabelProps) {
+function InputLabel(props: InputLabelProps): JSX.Element {
   return (
     <label className={styles.optionLabel}>
       <span>{props.name}</span>

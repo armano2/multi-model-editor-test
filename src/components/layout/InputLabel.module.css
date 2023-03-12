@@ -5,7 +5,7 @@
   flex: 0 0 1.5rem;
   flex-direction: row;
   font-size: 0.75rem;
-  margin: 0 0;
+  margin: 0;
   padding: 0.4rem 0.8rem;
   transition: background-color var(--ifm-transition-fast)
       var(--ifm-transition-timing-default),
