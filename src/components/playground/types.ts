@@ -26,18 +26,18 @@ export type TSConfig = Record<string, unknown> & {
   compilerOptions: Record<string, unknown>;
 };
 
-export type ShowASTOptions = false | 'ts' | 'es' | 'scope';
-
 export interface ConfigModel {
   sourceType?: TSESLint.SourceType;
   eslintrc: string;
   tsconfig: string;
   code: string;
-  code2: string;
   ts: string;
   tse: string;
-  showAST?: ShowASTOptions;
+  showAST?: false | 'ts' | 'es' | 'scope';
+  fileType: 'ts' | 'tsx' | 'js' | 'jsx' | 'd.ts';
 }
 
 export type PlaygroundSystem = ts.System &
-  Required<Pick<ts.System, 'watchFile' | 'watchDirectory' | 'deleteFile'>>;
+  Required<Pick<ts.System, 'watchFile' | 'watchDirectory' | 'deleteFile'>> & {
+    removeFile: (fileName: string) => void;
+  };

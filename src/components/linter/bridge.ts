@@ -24,8 +24,7 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
   const files = new Map<string, string>();
   files.set(`/.eslintrc`, config.eslintrc);
   files.set(`/tsconfig.json`, config.tsconfig);
-  files.set('/file.ts', config.code);
-  files.set('/demo.tsx', config.code2);
+  files.set(`/file.${config.fileType}`, config.code);
 
   const fileWatcherCallbacks = new Map<string, Set<ts.FileWatcherCallback>>();
   const directoryWatcherCallback = new Set<ts.DirectoryWatcherCallback>();
@@ -78,7 +77,7 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
 
   system.writeFile = (fileName, contents): void => {
     if (!contents) {
-      contents = '\n';
+      contents = '';
     }
     const file = files.get(fileName);
     if (file === contents) {
@@ -87,6 +86,10 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
     }
     files.set(fileName, contents);
     triggerCallbacks(fileName, file ? 2 : 0);
+  };
+
+  system.removeFile = (fileName): void => {
+    files.delete(fileName);
   };
 
   return system;

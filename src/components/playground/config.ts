@@ -1,29 +1,26 @@
 import type * as Monaco from 'monaco-editor';
 
 import { toJson } from '../config/utils';
-import type { ConfigModel, ShowASTOptions } from './types';
-
-export interface EditorFile {
-  name: string;
-  language: 'json' | 'typescript';
-  value: string;
-}
+import type { ConfigModel } from './types';
 
 export const defaultConfig: ConfigModel = {
   ts: '4.9.5',
   tse: '5.52.0',
+  sourceType: 'module',
+  fileType: 'ts',
   showAST: false,
   tsconfig: toJson({
     compilerOptions: {
       strictNullChecks: true,
-      jsx: 'preserve',
+    },
+    parserOptions: {
+      sourceType: 'module',
     },
   }),
   eslintrc: toJson({
     rules: {},
   }),
   code: `const x = Promise.resolve();\ntype y = Array<string>\n`,
-  code2: '\n',
 };
 
 export const tsVersions: string[] = [
@@ -42,7 +39,7 @@ export const tsVersions: string[] = [
 export const esTsVersions: string[] = ['5.54.1', '5.49.0', '5.48.2', '5.47.1'];
 
 export const detailTabs: {
-  value: ShowASTOptions;
+  value: Exclude<ConfigModel['showAST'], undefined>;
   label: string;
 }[] = [
   { value: false, label: 'Errors' },

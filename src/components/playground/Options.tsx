@@ -89,6 +89,14 @@ function Options({ config, setConfig }: PlaygroundMenuProps): JSX.Element {
             options={['script', 'module']}
           />
         </InputLabel>
+        <InputLabel name="File type">
+          <Dropdown
+            name="fileType"
+            value={config.fileType ?? 'ts'}
+            onChange={(fileType): void => setConfig({ fileType })}
+            options={['ts', 'tsx', 'js', 'jsx', 'd.ts']}
+          />
+        </InputLabel>
       </Expander>
       <Expander label="Actions">
         <ActionLabel name="Copy link" onClick={copyLinkToClipboard}>

@@ -5,7 +5,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 
 import { toJson } from '../config/utils';
-import type { ConfigModel, ShowASTOptions } from '../playground/types';
+import type { ConfigModel } from '../playground/types';
 import { hasOwnProperty } from '../util/has-own-property';
 
 function writeQueryParam(value: string | null): string {
@@ -16,7 +16,7 @@ function readQueryParam(value: string | null, fallback: string): string {
   return (value && decompressFromEncodedURIComponent(value)) || fallback;
 }
 
-function readShowAST(value: string | null): ShowASTOptions {
+function readShowAST(value: string | null): ConfigModel['showAST'] {
   switch (value) {
     case 'es':
     case 'ts':
@@ -24,6 +24,18 @@ function readShowAST(value: string | null): ShowASTOptions {
       return value;
   }
   return value ? 'es' : false;
+}
+
+function readFileType(value: string | null): ConfigModel['fileType'] {
+  switch (value) {
+    case 'ts':
+    case 'tsx':
+    case 'd.ts':
+    case 'js':
+    case 'jsx':
+      return value;
+  }
+  return 'ts';
 }
 
 function toJsonConfig(cfg: unknown, prop: string): string {
@@ -68,25 +80,23 @@ const parseStateFromUrl = (hash: string): Partial<ConfigModel> | undefined => {
       );
     }
 
-    // TODO: this is not ideal, and needs some improvements
-    let code = searchParams.has('code')
+    let fileType = readFileType(searchParams.get('fileType'));
+    if (searchParams.get('jsx') === 'true') {
+      fileType = 'tsx';
+    }
+
+    const code = searchParams.has('code')
       ? readQueryParam(searchParams.get('code'), '')
       : '';
-    let code2 = searchParams.has('code2')
-      ? readQueryParam(searchParams.get('code2'), '')
-      : '';
-    if (searchParams.has('jsx')) {
-      code2 = code;
-      code = '';
-    }
 
     return {
       ts: searchParams.get('ts') ?? undefined,
+      tse: searchParams.get('tse') ?? undefined,
       showAST: readShowAST(searchParams.get('showAST')),
       sourceType:
         searchParams.get('sourceType') === 'script' ? 'script' : 'module',
-      code: code,
-      code2: code2,
+      code,
+      fileType,
       eslintrc: eslintrc ?? '',
       tsconfig: tsconfig ?? '',
     };
@@ -108,8 +118,10 @@ const writeStateToUrl = (newState: ConfigModel): string | undefined => {
     if (newState.showAST) {
       searchParams.set('showAST', newState.showAST);
     }
+    if (newState.fileType !== 'ts') {
+      searchParams.set('fileType', newState.fileType);
+    }
     searchParams.set('code', writeQueryParam(newState.code));
-    searchParams.set('code2', writeQueryParam(newState.code2));
     searchParams.set('eslintrc', writeQueryParam(newState.eslintrc));
     searchParams.set('tsconfig', writeQueryParam(newState.tsconfig));
     return searchParams.toString();
@@ -145,7 +157,12 @@ const retrieveStateFromLocalStorage = (): Partial<ConfigModel> | undefined => {
         state.tse = tse;
       }
     }
-
+    if (hasOwnProperty('fileType', config)) {
+      const fileType = config.fileType;
+      if (fileType === 'true') {
+        state.fileType = readFileType(fileType);
+      }
+    }
     if (hasOwnProperty('showAST', config)) {
       const showAST = config.showAST;
       if (typeof showAST === 'string') {
@@ -164,34 +181,28 @@ const retrieveStateFromLocalStorage = (): Partial<ConfigModel> | undefined => {
 const writeStateToLocalStorage = (newState: ConfigModel): void => {
   const config: Partial<ConfigModel> = {
     ts: newState.ts,
+    tse: newState.tse,
+    sourceType: newState.sourceType,
     showAST: newState.showAST,
   };
   window.localStorage.setItem('config', JSON.stringify(config));
 };
 
+const getHash = (): string => {
+  return window.location.hash.slice(1);
+};
+
 function useHashState(
   initialState: ConfigModel
 ): [ConfigModel, (cfg: Partial<ConfigModel>) => void] {
-  const [hash, setHash] = useState<string>(() => window.location.hash.slice(1));
   const [state, setState] = useState<ConfigModel>(() => ({
     ...initialState,
     ...retrieveStateFromLocalStorage(),
-    ...parseStateFromUrl(hash),
+    ...parseStateFromUrl(getHash()),
   }));
 
   useEffect(() => {
-    const onHashChange = (): void => {
-      const newHash = window.location.hash.slice(1);
-      setHash(newHash);
-    };
-
-    window.addEventListener('popstate', onHashChange);
-    return (): void => {
-      window.removeEventListener('popstate', onHashChange);
-    };
-  }, []);
-
-  useEffect(() => {
+    const hash = getHash();
     // eslint-disable-next-line no-console
     console.info('[State] hash change detected', hash);
 
@@ -199,7 +210,7 @@ function useHashState(
     if (newState) {
       setState((oldState) => ({ ...oldState, ...newState }));
     }
-  }, [hash]);
+  }, []);
 
   const updateState = useCallback(
     (cfg: Partial<ConfigModel>) => {
@@ -209,7 +220,7 @@ function useHashState(
       const newState = { ...state, ...cfg };
 
       const newHash = writeStateToUrl(newState);
-      if (window.location.hash.slice(1) !== newHash) {
+      if (getHash() !== newHash) {
         writeStateToLocalStorage(newState);
         setState(newState);
 
@@ -219,7 +230,7 @@ function useHashState(
           window.location.href = url;
           window.location.reload();
         } else {
-          window.history.pushState(undefined, document.title, url);
+          window.history.replaceState(undefined, document.title, url);
         }
       }
     },

@@ -7,6 +7,9 @@ export function determineLanguage(file: string): string {
   if (/\.ts(x)?$/.test(file)) {
     return 'typescript';
   }
+  if (/\.js(x)?$/.test(file)) {
+    return 'javascript';
+  }
   if (/\.(json|eslintrc)$/.test(file)) {
     return 'json';
   }
@@ -18,22 +21,6 @@ export function createModels(
   editor: Monaco.editor.IStandaloneCodeEditor,
   system: PlaygroundSystem
 ): void {
-  const files = system.readDirectory('/');
-  files.forEach((fileName) => {
-    if (!fileName.endsWith('.d.ts')) {
-      const uri = monaco.Uri.file(fileName);
-      const model = monaco.editor.getModel(uri);
-      if (!model) {
-        monaco.editor.createModel(
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          system.readFile(fileName) || '\n',
-          determineLanguage(fileName),
-          uri
-        );
-      }
-    }
-  });
-
   system.watchDirectory('/', (fileName) => {
     if (editor.hasTextFocus()) {
       return;

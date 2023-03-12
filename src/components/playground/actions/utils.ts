@@ -90,7 +90,11 @@ export function normalizeMarkerGroup(marker: Monaco.editor.IMarker): string {
     }
     return marker.code.value;
   }
-  return marker.owner === 'typescript' ? 'TypeScript' : marker.owner;
+  return marker.owner === 'typescript'
+    ? 'TypeScript'
+    : marker.owner === 'javascript'
+    ? 'JavaScript'
+    : marker.owner;
 }
 
 const moduleRegexp = /(module\.exports\s*=)/g;

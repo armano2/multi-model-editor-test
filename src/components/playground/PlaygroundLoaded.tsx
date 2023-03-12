@@ -6,6 +6,7 @@ import useColorMode from '../hooks/useColorMode';
 import type { EslintUtilsModule } from '../importer';
 import { addLibFiles } from '../linter/bridge';
 import { createLinter } from '../linter/createLinter';
+import { isCodeFile } from '../linter/utils';
 import { createModels, determineLanguage } from './actions/createModels';
 import { registerActions } from './actions/registerActions';
 import { registerDefaults } from './actions/registerDefaults';
@@ -31,14 +32,15 @@ export default function PlaygroundLoaded({
 }: PlaygroundLoadedProps): JSX.Element {
   const [colorMode] = useColorMode();
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor>();
-  const [_, setDecorations] = useState<string[]>([]);
-  const [defaultFile] = useState(() => ({
+  const [, setDecorations] = useState<string[]>([]);
+  const [currentFile, setCurrentFile] = useState(() => ({
+    path: activeFile,
     language: determineLanguage(activeFile),
     value: system.readFile('/' + activeFile),
   }));
 
   useEffect(() => {
-    const model = monaco.editor.getModel(monaco.Uri.file('/file.ts'));
+    const model = monaco.editor.getModel(monaco.Uri.file(activeFile));
     if (model) {
       setDecorations((prevDecorations) =>
         model.deltaDecorations(
@@ -60,7 +62,46 @@ export default function PlaygroundLoaded({
         )
       );
     }
-  }, [selectedRange, monaco]);
+  }, [selectedRange, monaco, activeFile]);
+
+  useEffect(() => {
+    if (!editorRef.current) {
+      return;
+    }
+
+    const activeUri = monaco.Uri.file(activeFile);
+    let model = monaco.editor.getModel(activeUri);
+    if (currentFile.path !== activeUri.path) {
+      if (!model) {
+        let code: string | undefined = '';
+        if (isCodeFile(activeUri.path)) {
+          const currentUri = monaco.Uri.file(currentFile.path);
+          code = system.readFile(currentUri.path);
+          // system.removeFile(currentUri.path);
+          monaco.editor.getModel(currentUri)?.dispose();
+          system.writeFile(activeUri.path, code ?? '');
+        } else {
+          code = system.readFile(activeUri.path);
+        }
+        model = monaco.editor.createModel(
+          code ?? '',
+          determineLanguage(activeUri.path),
+          activeUri
+        );
+        model.updateOptions({ tabSize: 2, insertSpaces: true });
+      }
+
+      setCurrentFile({
+        path: activeFile,
+        language: determineLanguage(activeFile),
+        value: system.readFile(activeUri.path),
+      });
+
+      editorRef.current.setModel(model);
+    }
+
+    monaco.editor.setModelLanguage(model!, determineLanguage(activeUri.path));
+  }, [system, currentFile.path, monaco, editorRef, activeFile]);
 
   const onEditorDidMount = (
     editor: Monaco.editor.IStandaloneCodeEditor
@@ -80,6 +121,11 @@ export default function PlaygroundLoaded({
         // @ts-expect-error: TODO: remove me, this is only used for debugging
         window.system = system;
 
+        monaco.editor.setModelLanguage(
+          editor.getModel()!,
+          determineLanguage(currentFile.path)
+        );
+
         linter.lintAllFiles();
       })
       .catch((error) => {
@@ -91,9 +137,9 @@ export default function PlaygroundLoaded({
   return (
     <Editor
       theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
-      path={activeFile}
-      defaultLanguage={defaultFile.language}
-      defaultValue={defaultFile.value}
+      defaultPath={currentFile.path}
+      defaultLanguage="typescript"
+      defaultValue={currentFile.value}
       onMount={onEditorDidMount}
       options={defaultEditorOptions}
     />

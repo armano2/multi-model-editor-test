@@ -9,7 +9,12 @@ import { debounce } from '../util/debounce';
 import { defaultEslintConfig, PARSER_NAME } from './config';
 import { createParser } from './createParser';
 import type { Disposable, UpdateModel } from './types';
-import { createCompilerOptions } from './utils';
+import {
+  createCompilerOptions,
+  isCodeFile,
+  isEslintrcFile,
+  isTSConfigFile,
+} from './utils';
 
 export type RulesMap = Map<
   string,
@@ -127,12 +132,9 @@ export function createLinter(
 
   const lintAllFiles = (): void => {
     const files = system.readDirectory('/');
-    for (const file of files) {
-      if (
-        !file.endsWith('.d.ts') &&
-        (file.endsWith('.ts') || file.endsWith('.tsx'))
-      ) {
-        triggerLint(file);
+    for (const fileName of files) {
+      if (isCodeFile(fileName)) {
+        triggerLint(fileName);
       }
     }
   };
@@ -141,12 +143,12 @@ export function createLinter(
   system.watchDirectory(
     '/',
     debounce((fileName) => {
-      if (fileName === '/file.ts' || fileName === '/demo.tsx') {
+      if (isCodeFile(fileName)) {
         triggerLint(fileName);
-      } else if (fileName === '/.eslintrc') {
+      } else if (isEslintrcFile(fileName)) {
         applyEslintConfig(fileName);
         lintAllFiles();
-      } else if (fileName === '/tsconfig.json') {
+      } else if (isTSConfigFile(fileName)) {
         applyTSConfig(fileName);
         lintAllFiles();
       }

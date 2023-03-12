@@ -10,6 +10,7 @@ import useHashState from '../hooks/useHashState';
 import EditorTabs from '../layout/EditorTabs';
 import { createFileSystem } from '../linter/bridge';
 import type { UpdateModel } from '../linter/types';
+import { isCodeFile } from '../linter/utils';
 import { debounce } from '../util/debounce';
 import { defaultConfig, detailTabs } from './config';
 import { ErrorsViewer } from './ErrorsViewer';
@@ -23,7 +24,8 @@ function PlaygroundRoot(): JSX.Element {
   const [config, setConfig] = useHashState(defaultConfig);
 
   const [system] = useState<PlaygroundSystem>(() => createFileSystem(config));
-  const [activeFile, setFileName] = useState('file.ts');
+  const [activeFile, setFileName] = useState(`file.${config.fileType}`);
+  const [editorFile, setEditorFile] = useState(`file.${config.fileType}`);
 
   const [errors, setErrors] = useState<ErrorGroup[]>([]);
   const [astModel, setAstModel] = useState<UpdateModel>();
@@ -37,15 +39,10 @@ function PlaygroundRoot(): JSX.Element {
     const dispose = system.watchDirectory(
       '/',
       debounce((fileName) => {
-        if (fileName === '/file.ts') {
+        if (isCodeFile(fileName)) {
           const code = system.readFile(fileName);
           if (config.code !== code) {
             setConfig({ code });
-          }
-        } else if (fileName === '/demo.tsx') {
-          const code2 = system.readFile(fileName);
-          if (config.code2 !== code2) {
-            setConfig({ code2 });
           }
         } else if (fileName === '/.eslintrc') {
           const eslintrc = system.readFile(fileName);
@@ -66,11 +63,14 @@ function PlaygroundRoot(): JSX.Element {
   }, [config, setConfig, system]);
 
   useEffect(() => {
-    system.writeFile('/file.ts', config.code);
-    system.writeFile('/demo.tsx', config.code2);
-    system.writeFile('/.eslintrc', config.eslintrc);
-    system.writeFile('/tsconfig.json', config.tsconfig);
-  }, [config, system]);
+    const newFile = `file.${config.fileType}`;
+    if (newFile !== editorFile) {
+      if (editorFile === activeFile) {
+        setFileName(newFile);
+      }
+      setEditorFile(newFile);
+    }
+  }, [config, system, editorFile, activeFile]);
 
   return (
     <>
@@ -104,7 +104,7 @@ function PlaygroundRoot(): JSX.Element {
         <Panel id="playgroundEditor" className={styles.PanelRow} maxSize={70}>
           <div className={styles.playgroundEditor}>
             <EditorTabs
-              tabs={['file.ts', 'demo.tsx', '.eslintrc', 'tsconfig.json']}
+              tabs={[editorFile, '.eslintrc', 'tsconfig.json']}
               active={activeFile}
               change={setFileName}
             />

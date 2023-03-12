@@ -5,6 +5,8 @@ export function createCompilerOptions(
 ): ts.CompilerOptions {
   const config = window.ts.convertCompilerOptionsFromJson(
     {
+      allowJs: true,
+      jsx: 'preserve',
       target: 'esnext',
       module: 'esnext',
       ...tsConfig,
@@ -26,4 +28,16 @@ export function createCompilerOptions(
   }
 
   return options;
+}
+
+export function isCodeFile(fileName: string): boolean {
+  return /^\/file\.(tsx?|jsx?|d\.ts)$/.test(fileName);
+}
+
+export function isEslintrcFile(fileName: string): boolean {
+  return fileName === '/.eslintrc';
+}
+
+export function isTSConfigFile(fileName: string): boolean {
+  return fileName === '/tsconfig.json';
 }
