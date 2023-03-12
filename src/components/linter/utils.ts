@@ -2,7 +2,7 @@ import type * as ts from 'typescript';
 
 export function createCompilerOptions(
   tsConfig: Record<string, unknown> = {}
-): ts.CompilerOptions {
+): ReturnType<typeof ts.convertCompilerOptionsFromJson> {
   const config = window.ts.convertCompilerOptionsFromJson(
     {
       allowJs: true,
@@ -21,13 +21,11 @@ export function createCompilerOptions(
     '/tsconfig.json'
   );
 
-  const options = config.options;
-
-  if (!options.lib) {
-    options.lib = [window.ts.getDefaultLibFileName(options)];
+  if (!config.options.lib) {
+    config.options.lib = [window.ts.getDefaultLibFileName(config.options)];
   }
 
-  return options;
+  return config;
 }
 
 export function isCodeFile(fileName: string): boolean {

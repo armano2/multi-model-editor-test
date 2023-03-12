@@ -114,7 +114,9 @@ export function createLinter(
     try {
       const file = system.readFile(fileName) ?? '{}';
       const parsed = parseTSConfig(file).compilerOptions;
-      compilerOptions = createCompilerOptions(parsed);
+      const options = createCompilerOptions(parsed);
+
+      compilerOptions = options.options;
 
       // eslint-disable-next-line no-console
       console.log('[Editor] Updating', fileName, compilerOptions);

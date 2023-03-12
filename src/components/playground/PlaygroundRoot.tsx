@@ -107,6 +107,7 @@ function PlaygroundRoot(): JSX.Element {
               tabs={[editorFile, '.eslintrc', 'tsconfig.json']}
               active={activeFile}
               change={setFileName}
+              showModal={setShowModal}
             />
             <PlaygroundEditor
               tsEsVersion={config.tse}

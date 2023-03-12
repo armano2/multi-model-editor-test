@@ -1,4 +1,7 @@
-import { createVirtualTypeScriptEnvironment } from '@typescript/vfs';
+import {
+  createVirtualTypeScriptEnvironment,
+  VirtualTypeScriptEnvironment,
+} from '@typescript/vfs';
 import type { ParserOptions } from '@typescript-eslint/types';
 import type { ParseSettings } from '@typescript-eslint/typescript-estree/dist/parseSettings';
 import type { TSESLint } from '@typescript-eslint/utils';
@@ -17,23 +20,24 @@ export function createParser(
 ): TSESLint.Linter.ParserModule & {
   updateConfig: (compilerOptions: ts.CompilerOptions) => void;
 } {
-  let compilerHost = createVirtualTypeScriptEnvironment(
-    system,
-    [],
-    window.ts,
-    compilerOptions
-  );
-
   const registeredFiles = new Set<string>();
 
+  const createEnv = (
+    compilerOptions: ts.CompilerOptions
+  ): VirtualTypeScriptEnvironment => {
+    return createVirtualTypeScriptEnvironment(
+      system,
+      Array.from(registeredFiles),
+      window.ts,
+      compilerOptions
+    );
+  };
+
+  let compilerHost = createEnv(compilerOptions);
+
   return {
-    updateConfig(compilerOptions: ts.CompilerOptions): void {
-      compilerHost = createVirtualTypeScriptEnvironment(
-        system,
-        Array.from(registeredFiles),
-        window.ts,
-        compilerOptions
-      );
+    updateConfig(compilerOptions): void {
+      compilerHost = createEnv(compilerOptions);
     },
     parseForESLint: (
       text: string,
