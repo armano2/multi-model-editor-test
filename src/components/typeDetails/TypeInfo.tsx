@@ -66,9 +66,10 @@ export function TypeInfo({
     (selection: unknown) => {
       if (isRecord(selection) && isTSNode(selection) && value !== selection) {
         onSelect(selection);
+        onHoverNode?.(undefined);
       }
     },
-    [onSelect, value]
+    [onSelect, onHoverNode, value]
   );
 
   if (!program || !computed) {
