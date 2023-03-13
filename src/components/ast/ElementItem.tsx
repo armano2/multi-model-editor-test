@@ -37,6 +37,16 @@ interface ComputedValueSimple {
 
 type ComputedValue = ComputedValueIterable | ComputedValueSimple;
 
+function getValues(value: object | unknown[]): [string, unknown][] {
+  if (value instanceof Map) {
+    return Array.from(value.entries()) as [string, unknown][];
+  }
+  if (value instanceof Set) {
+    return Array.from(value.entries()) as [string, unknown][];
+  }
+  return Object.entries(value);
+}
+
 function ElementItem({
   level,
   selectedPath,
@@ -66,7 +76,7 @@ function ElementItem({
         group: 'iterable',
         typeName: getTypeName(type, value, propName, nodeType),
         nodeType: nodeType,
-        value: Object.entries(value).filter(
+        value: getValues(value).filter(
           (item) =>
             item[1] !== undefined &&
             !item[0].startsWith('_') &&

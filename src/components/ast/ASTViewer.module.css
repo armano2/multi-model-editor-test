@@ -49,6 +49,17 @@
   color: var(--token-color-class-name);
 }
 
+.propNumber,
+.propEmpty,
+.propRegExp,
+.propClass,
+.propBoolean,
+.propError,
+.propString {
+  display: inline-flex;
+  max-width: 600px;
+}
+
 .propName {
   color: var(--token-color-property);
 }
