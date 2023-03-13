@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useMedia } from 'react-use';
 import type * as ts from 'typescript';
@@ -8,18 +8,32 @@ import astStyles from '../ast/ASTViewer.module.css';
 import { tsEnumValue } from '../ast/tsUtils';
 import Link from '../inputs/Link';
 import playgroundStyles from './playground.module.css';
+import { findSelectionPath } from '../ast/selectedRange';
+import { isTSNode } from '../ast/utils';
+import clsx from 'clsx';
 
 export interface TypesDetailsProps {
+  readonly value: ts.Node;
+  readonly program?: ts.Program;
+  readonly cursorPosition?: number;
+}
+
+export interface TypeInfoProps {
   readonly value: ts.Node;
   readonly program?: ts.Program;
 }
 
 interface SimplifiedItemProps {
   readonly value: ts.Node;
+  readonly selectedNode: ts.Node | undefined;
   readonly onSelect: (value: ts.Node) => void;
 }
 
-function SimplifiedItem({ value, onSelect }: SimplifiedItemProps): JSX.Element {
+function SimplifiedItem({
+  value,
+  onSelect,
+  selectedNode,
+}: SimplifiedItemProps): JSX.Element {
   const items = useMemo(() => {
     const result: ts.Node[] = [];
     value.forEachChild((child) => {
@@ -32,7 +46,9 @@ function SimplifiedItem({ value, onSelect }: SimplifiedItemProps): JSX.Element {
     <div className={astStyles.expand}>
       <Link
         href={`#${value.kind}`}
-        className={astStyles.tokenName}
+        className={clsx(astStyles.tokenName, {
+          [astStyles.selected]: selectedNode === value,
+        })}
         onClick={(e): void => {
           e.preventDefault();
           onSelect(value);
@@ -44,6 +60,7 @@ function SimplifiedItem({ value, onSelect }: SimplifiedItemProps): JSX.Element {
         {items.map((item, index) => {
           return (
             <SimplifiedItem
+              selectedNode={selectedNode}
               value={item}
               onSelect={onSelect}
               key={index.toString()}
@@ -63,7 +80,7 @@ interface InfoModel {
   signature?: unknown;
 }
 
-export function TypeInfo({ value, program }: TypesDetailsProps): JSX.Element {
+export function TypeInfo({ value, program }: TypeInfoProps): JSX.Element {
   const computed = useMemo(() => {
     if (!program) {
       return undefined;
@@ -137,6 +154,16 @@ export function TypesDetails(props: TypesDetailsProps): JSX.Element {
   const isWide = useMedia('(min-width: 1280px)');
   const [selectedNode, setSelectedNode] = useState<ts.Node>();
 
+  useEffect(() => {
+    console.log(props.cursorPosition, props.value);
+    if (props.cursorPosition) {
+      const item = findSelectionPath(props.value, props.cursorPosition);
+      if (item.node && isTSNode(item.node)) {
+        setSelectedNode(item.node);
+      }
+    }
+  }, [props.cursorPosition, props.value]);
+
   return (
     <PanelGroup
       autoSaveId="playground-types"
@@ -145,7 +172,11 @@ export function TypesDetails(props: TypesDetailsProps): JSX.Element {
       <Panel id="simplifiedTree" defaultSize={35} collapsible={true}>
         <div className={playgroundStyles.playgroundInfoContainer}>
           <div className={astStyles.list}>
-            <SimplifiedItem onSelect={setSelectedNode} value={props.value} />
+            <SimplifiedItem
+              selectedNode={selectedNode}
+              onSelect={setSelectedNode}
+              value={props.value}
+            />
           </div>
         </div>
       </Panel>

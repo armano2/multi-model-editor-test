@@ -49,7 +49,7 @@ function ASTViewer({
     if (cursorPosition == null || !model || typeof model !== 'object') {
       return 'ast';
     }
-    return findSelectionPath(model, cursorPosition).join('.');
+    return findSelectionPath(model, cursorPosition).path.join('.');
   }, [cursorPosition, model]);
 
   useEffect(() => {

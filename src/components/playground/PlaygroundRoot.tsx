@@ -159,6 +159,7 @@ function PlaygroundRoot(): JSX.Element {
                 <TypesDetails
                   program={astModel.program}
                   value={astModel.storedTsAST}
+                  cursorPosition={cursorPosition}
                 />
               ) : (
                 <ASTViewer

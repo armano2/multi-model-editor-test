@@ -59,7 +59,7 @@ function findInObject(
 export function findSelectionPath(
   node: object,
   cursorPosition: number
-): string[] {
+): { path: string[]; node: object | null } {
   const nodePath: string[] = ['ast'];
   const visited = new Set<unknown>();
   let iter: null | object = node;
@@ -75,8 +75,8 @@ export function findSelectionPath(
       iter = result.value;
       nodePath.push(...result.key);
     } else {
-      iter = null;
+      return { path: nodePath, node: iter };
     }
   }
-  return nodePath;
+  return { path: nodePath, node: null };
 }
