@@ -1,7 +1,5 @@
-import {
-  createVirtualTypeScriptEnvironment,
-  VirtualTypeScriptEnvironment,
-} from '@typescript/vfs';
+import type { VirtualTypeScriptEnvironment } from '@typescript/vfs';
+import { createVirtualTypeScriptEnvironment } from '@typescript/vfs';
 import type { ParserOptions } from '@typescript-eslint/types';
 import type { ParseSettings } from '@typescript-eslint/typescript-estree/dist/parseSettings';
 import type { TSESLint } from '@typescript-eslint/utils';

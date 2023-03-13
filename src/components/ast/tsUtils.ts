@@ -9,6 +9,8 @@ interface TsParsedEnums {
   TypeFlags: Record<number, string>;
   ScriptKind: Record<number, string>;
   TransformFlags: Record<number, string>;
+  ScriptTarget: Record<number, string>;
+  LanguageVariant: Record<number, string>;
 }
 
 export function extractEnum(
@@ -44,6 +46,8 @@ export function getTsEnum(type: keyof TsParsedEnums): Record<number, string> {
       FlowFlags: extractEnum(window.ts.FlowFlags),
       TypeFlags: extractEnum(window.ts.TypeFlags),
       ScriptKind: extractEnum(window.ts.ScriptKind),
+      ScriptTarget: extractEnum(window.ts.ScriptTarget),
+      LanguageVariant: extractEnum(window.ts.LanguageVariant),
       // @ts-expect-error: non public API
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       TransformFlags: extractEnum(window.ts.TransformFlags),

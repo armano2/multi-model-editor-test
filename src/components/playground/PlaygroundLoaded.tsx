@@ -26,6 +26,7 @@ export default function PlaygroundLoaded({
   system,
   onValidate,
   onUpdate,
+  onCursorChange,
   monaco,
   utils,
   selectedRange,
@@ -115,7 +116,14 @@ export default function PlaygroundLoaded({
         registerDefaults(monaco, linter, system);
         createModels(monaco, editor, system);
         registerActions(monaco, editor, linter);
-        registerEvents(monaco, editor, system, onValidate, globalActions);
+        registerEvents(
+          monaco,
+          editor,
+          system,
+          onValidate,
+          onCursorChange,
+          globalActions
+        );
         registerLinter(monaco, editor, linter, globalActions);
 
         // @ts-expect-error: TODO: remove me, this is only used for debugging

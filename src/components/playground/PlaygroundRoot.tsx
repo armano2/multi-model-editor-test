@@ -32,6 +32,10 @@ function PlaygroundRoot(): JSX.Element {
   const [esQueryFilter, setEsQueryFilter] = useState<ESQuery.Selector>();
   const [showModal, setShowModal] = useState<string | false>(false);
   const [selectedRange, setSelectedRange] = useState<[number, number]>();
+  const [cursorPosition, onCursorChange] = useState<number>();
+
+  // TODO: should we auto disable this on mobile
+  const [enableScrolling, setEnableScrolling] = useState<boolean>(true);
 
   const isWide = useMedia('(min-width: 1280px)');
 
@@ -97,7 +101,12 @@ function PlaygroundRoot(): JSX.Element {
           collapsible={true}
         >
           <div className={styles.playgroundMenu}>
-            <Options config={config} setConfig={setConfig} />
+            <Options
+              config={config}
+              setConfig={setConfig}
+              enableScrolling={enableScrolling}
+              setEnableScrolling={setEnableScrolling}
+            />
           </div>
         </Panel>
         <PanelResizeHandle className={styles.PanelResizeHandle} />
@@ -116,6 +125,7 @@ function PlaygroundRoot(): JSX.Element {
               system={system}
               activeFile={activeFile}
               onValidate={setErrors}
+              onCursorChange={onCursorChange}
               selectedRange={selectedRange}
             />
           </div>
@@ -147,6 +157,8 @@ function PlaygroundRoot(): JSX.Element {
                   filter={config.showAST === 'es' ? esQueryFilter : undefined}
                   value={astModel}
                   tab={config.showAST}
+                  enableScrolling={enableScrolling}
+                  cursorPosition={cursorPosition}
                   onSelectNode={setSelectedRange}
                 />
               )}

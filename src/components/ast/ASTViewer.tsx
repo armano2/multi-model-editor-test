@@ -1,19 +1,23 @@
 import type * as ESQuery from 'esquery';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import CopyButton from '../inputs/CopyButton';
 import type { UpdateModel } from '../linter/types';
+import { debounce } from '../util/debounce';
+import { scrollIntoViewIfNeeded } from '../util/scroll-into';
 import styles from './ASTViewer.module.css';
 import ElementItem from './ElementItem';
-import type { OnSelectNodeFn, SelectedRange } from './types';
+import { findSelectionPath } from './selectedRange';
+import type { OnSelectNodeFn } from './types';
 import { getTooltipLabel, getTypeName } from './utils';
 
 export interface ASTViewerProps {
-  readonly selection?: SelectedRange;
+  readonly cursorPosition?: number;
   readonly onSelectNode: OnSelectNodeFn;
   readonly value: UpdateModel;
   readonly tab: false | string;
   readonly filter?: ESQuery.Selector;
+  readonly enableScrolling?: boolean;
 }
 
 function tryToApplyFilter<T>(value: T, filter?: ESQuery.Selector): T | T[] {
@@ -30,11 +34,12 @@ function tryToApplyFilter<T>(value: T, filter?: ESQuery.Selector): T | T[] {
 }
 
 function ASTViewer({
-  selection,
+  cursorPosition,
   onSelectNode,
   value,
   tab,
   filter,
+  enableScrolling,
 }: ASTViewerProps): JSX.Element {
   const model = useMemo(() => {
     if (tab === 'ts') {
@@ -45,14 +50,35 @@ function ASTViewer({
     return tryToApplyFilter(value.storedAST, filter);
   }, [value, filter, tab]);
 
+  const selectedPath = useMemo(() => {
+    if (cursorPosition == null || !model || typeof model !== 'object') {
+      return 'ast';
+    }
+    return findSelectionPath(model, cursorPosition).join('.');
+  }, [cursorPosition, model]);
+
+  useEffect(() => {
+    if (enableScrolling) {
+      const delayed = debounce(() => {
+        const htmlElement = document.querySelector(
+          `div[data-level="${selectedPath}"]`
+        );
+        if (htmlElement) {
+          scrollIntoViewIfNeeded(htmlElement);
+        }
+      }, 100);
+      delayed();
+    }
+  }, [selectedPath, enableScrolling]);
+
   return (
     <div className={styles.list}>
       <ElementItem
         getTypeName={getTypeName}
         value={model}
         level="ast"
-        selection={selection}
         onSelectNode={onSelectNode}
+        selectedPath={selectedPath}
         getTooltipLabel={getTooltipLabel}
       />
       <CopyButton value={model} />

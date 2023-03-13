@@ -1,5 +1,7 @@
 import type * as Monaco from 'monaco-editor';
 
+import { isCodeFile } from '../../linter/utils';
+import { debounce } from '../../util/debounce';
 import type { ErrorGroup, PlaygroundSystem } from '../types';
 import type { LintCodeAction } from './utils';
 import { tryParseEslintModule } from './utils';
@@ -16,6 +18,7 @@ export function registerEvents(
   editor: Monaco.editor.IStandaloneCodeEditor,
   system: PlaygroundSystem,
   onValidate: (markers: ErrorGroup[]) => void,
+  onCursorChange: (offset: number) => void,
   globalActions: Map<string, Map<string, LintCodeAction[]>>
 ): Monaco.IDisposable {
   const updateMarkers = (uri: Monaco.Uri): void => {
@@ -105,6 +108,18 @@ export function registerEvents(
         }
       }
     }),
+    editor.onDidChangeCursorPosition(
+      debounce((e) => {
+        if (e.position) {
+          const model = editor.getModel();
+          if (model && isCodeFile(model.uri.path)) {
+            // eslint-disable-next-line no-console
+            console.info('[Editor] updating cursor', e.position);
+            onCursorChange(model.getOffsetAt(e.position));
+          }
+        }
+      }, 150)
+    ),
   ];
 
   return {

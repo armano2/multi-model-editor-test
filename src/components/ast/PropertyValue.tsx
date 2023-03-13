@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 
 import styles from './ASTViewer.module.css';
 import { objType } from './utils';
@@ -61,7 +61,9 @@ export function getSimpleModel(data: unknown): SimpleModel {
 }
 
 function PropertyValue({ value }: PropertyValueProps): JSX.Element {
-  const [model] = useState(() => getSimpleModel(value));
+  const model = useMemo(() => {
+    return getSimpleModel(value);
+  }, [value]);
 
   switch (model.type) {
     case 'string':

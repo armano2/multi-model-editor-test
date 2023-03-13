@@ -1,3 +1,6 @@
+import type { TSESTree } from '@typescript-eslint/utils';
+import type * as ts from 'typescript';
+
 import { expandFlags, tsEnumValue } from './tsUtils';
 import type { ParentNodeType } from './types';
 
@@ -32,6 +35,14 @@ export function jsonStringifyRecursive(obj: unknown): string {
   );
 }
 
+export function isESNode(value: object): value is TSESTree.BaseNode {
+  return 'type' in value && 'loc' in value && 'range' in value;
+}
+
+export function isTSNode(value: object): value is ts.Node {
+  return 'kind' in value && 'pos' in value && 'flags' in value;
+}
+
 export function getNodeType(
   typeName: string,
   value: unknown,
@@ -40,7 +51,7 @@ export function getNodeType(
   if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
     if ('childScopes' in value && '$id' in value && 'type' in value) {
       return 'scope';
-    } else if ('type' in value && 'loc' in value) {
+    } else if (isESNode(value)) {
       return 'esNode';
     } else if ('kind' in value && 'pos' in value && 'flags' in value) {
       return 'tsNode';
@@ -111,6 +122,10 @@ export function getTooltipLabel(
             return expandFlags('TransformFlags', value);
           case 'kind':
             return `SyntaxKind.${tsEnumValue('SyntaxKind', value)}`;
+          case 'languageVersion':
+            return `ScriptTarget.${tsEnumValue('ScriptTarget', value)}`;
+          case 'languageVariant':
+            return `LanguageVariant.${tsEnumValue('LanguageVariant', value)}`;
         }
         break;
       }

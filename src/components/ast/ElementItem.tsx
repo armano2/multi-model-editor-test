@@ -1,16 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Tooltip from '../inputs/Tooltip';
 import styles from './ASTViewer.module.css';
 import HiddenItem from './HiddenItem';
 import ItemGroup from './ItemGroup';
 import PropertyValue from './PropertyValue';
-import type {
-  GetTooltipLabelFn,
-  GetTypeNameFN,
-  OnSelectNodeFn,
-  SelectedRange,
-} from './types';
+import type { GetTooltipLabelFn, GetTypeNameFN, OnSelectNodeFn } from './types';
 import type { ParentNodeType } from './types';
 import { getNodeType, getRange, objType } from './utils';
 
@@ -20,9 +15,9 @@ export interface ElementItemProps {
   readonly propName?: string;
   readonly level: string;
   readonly value: unknown;
-  readonly selection?: SelectedRange;
   readonly onSelectNode: OnSelectNodeFn;
   readonly parentNodeType?: ParentNodeType;
+  readonly selectedPath?: string;
 }
 
 interface ComputedValueIterable {
@@ -44,7 +39,7 @@ type ComputedValue = ComputedValueIterable | ComputedValueSimple;
 
 function ElementItem({
   level,
-  selection,
+  selectedPath,
   propName,
   value,
   onSelectNode,
@@ -53,7 +48,9 @@ function ElementItem({
   parentNodeType,
 }: ElementItemProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => level === 'ast');
-  const [isSelected] = useState<boolean>(false);
+  const isSelected = useMemo(() => {
+    return selectedPath === level && level !== 'ast';
+  }, [selectedPath, level]);
 
   const computedValue = useMemo((): ComputedValue => {
     const type = objType(value);
@@ -78,9 +75,17 @@ function ElementItem({
     }
   }, [value, propName, getTypeName, getTooltipLabel, parentNodeType]);
 
+  useEffect(() => {
+    const shouldOpen = !!selectedPath && selectedPath.startsWith(level);
+    if (shouldOpen) {
+      setIsExpanded((current) => current || shouldOpen);
+    }
+  }, [selectedPath, level]);
+
   if (computedValue.group === 'iterable') {
     return (
       <ItemGroup
+        level={level}
         propName={propName}
         typeName={computedValue.typeName}
         isExpanded={isExpanded}
@@ -95,9 +100,9 @@ function ElementItem({
             <div className={styles.subList}>
               {computedValue.value.map(([key, item]) => (
                 <ElementItem
-                  level={`${level}.${propName}[${key}]`}
-                  key={`${level}.${propName}[${key}]`}
-                  selection={selection}
+                  level={`${level}.${key}`}
+                  key={`${level}.${key}`}
+                  selectedPath={selectedPath}
                   value={item}
                   propName={key}
                   onSelectNode={onSelectNode}
@@ -122,7 +127,7 @@ function ElementItem({
     );
   } else {
     return (
-      <ItemGroup propName={propName}>
+      <ItemGroup level={level} propName={propName}>
         {computedValue.tooltip ? (
           <Tooltip hover={true} position="right" text={computedValue.tooltip}>
             <PropertyValue value={value} />

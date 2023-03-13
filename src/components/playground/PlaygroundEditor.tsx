@@ -16,6 +16,7 @@ export interface PlaygroundProps {
   readonly system: PlaygroundSystem;
   readonly onValidate: (markers: ErrorGroup[]) => void;
   readonly onUpdate: (model: UpdateModel) => void;
+  readonly onCursorChange: (offset: number) => void;
   readonly selectedRange?: [number, number];
 }
 

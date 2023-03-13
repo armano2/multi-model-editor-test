@@ -5,6 +5,7 @@ import styles from './ASTViewer.module.css';
 import PropertyName from './PropertyName';
 
 export interface ItemGroupProps {
+  readonly level: string;
   readonly propName?: string;
   readonly typeName?: string;
   readonly isSelected?: boolean;
@@ -16,6 +17,7 @@ export interface ItemGroupProps {
 }
 
 export default function ItemGroup({
+  level,
   propName,
   typeName,
   isSelected,
@@ -29,6 +31,7 @@ export default function ItemGroup({
 
   return (
     <div
+      data-level={level}
       ref={listItem}
       className={clsx(
         canExpand ? styles.expand : styles.nonExpand,

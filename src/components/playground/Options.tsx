@@ -16,10 +16,17 @@ import type { ConfigModel } from './types';
 
 interface PlaygroundMenuProps {
   readonly config: ConfigModel;
+  readonly enableScrolling: boolean;
+  readonly setEnableScrolling: (checked: boolean) => void;
   readonly setConfig: (cfg: Partial<ConfigModel>) => void;
 }
 
-function Options({ config, setConfig }: PlaygroundMenuProps): JSX.Element {
+function Options({
+  config,
+  setConfig,
+  enableScrolling,
+  setEnableScrolling,
+}: PlaygroundMenuProps): JSX.Element {
   const [colorMode, setColorMode] = useColorMode();
   const [copyLink, setCopyLink] = useDebouncedToggle<boolean>(false);
   const [copyMarkdown, setCopyMarkdown] = useDebouncedToggle<boolean>(false);
@@ -95,6 +102,14 @@ function Options({ config, setConfig }: PlaygroundMenuProps): JSX.Element {
             value={config.fileType ?? 'ts'}
             onChange={(fileType): void => setConfig({ fileType })}
             options={['ts', 'tsx', 'js', 'jsx', 'd.ts']}
+          />
+        </InputLabel>
+        <InputLabel name="Auto scroll">
+          <Checkbox
+            name="enableScrolling"
+            value=""
+            checked={enableScrolling}
+            onChange={setEnableScrolling}
           />
         </InputLabel>
       </Expander>
