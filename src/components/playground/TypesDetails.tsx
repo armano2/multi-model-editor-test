@@ -152,10 +152,9 @@ export function TypeInfo({ value, program }: TypeInfoProps): JSX.Element {
 
 export function TypesDetails(props: TypesDetailsProps): JSX.Element {
   const isWide = useMedia('(min-width: 1280px)');
-  const [selectedNode, setSelectedNode] = useState<ts.Node>();
+  const [selectedNode, setSelectedNode] = useState<ts.Node>(props.value);
 
   useEffect(() => {
-    console.log(props.cursorPosition, props.value);
     if (props.cursorPosition) {
       const item = findSelectionPath(props.value, props.cursorPosition);
       if (item.node && isTSNode(item.node)) {

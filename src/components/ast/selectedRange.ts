@@ -8,7 +8,9 @@ function getRangeFromNode(value: object): null | [number, number] {
   if (isESNode(value)) {
     return value.range;
   } else if (isTSNode(value)) {
-    return [value.pos, value.end];
+    if (value.kind >= window.ts.SyntaxKind.FirstNode) {
+      return [value.pos, value.end];
+    }
   }
   return null;
 }
