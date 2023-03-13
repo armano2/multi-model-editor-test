@@ -110,7 +110,11 @@ function PlaygroundRoot(): JSX.Element {
           </div>
         </Panel>
         <PanelResizeHandle className={styles.PanelResizeHandle} />
-        <Panel id="playgroundEditor" className={styles.PanelRow} maxSize={70}>
+        <Panel
+          id="playgroundEditor"
+          className={styles.PanelRow}
+          collapsible={true}
+        >
           <div className={styles.playgroundEditor}>
             <EditorTabs
               tabs={[editorFile, '.eslintrc', 'tsconfig.json']}
@@ -132,10 +136,10 @@ function PlaygroundRoot(): JSX.Element {
         </Panel>
         <PanelResizeHandle className={styles.PanelResizeHandle} />
         <Panel
-          maxSize={70}
           id="playgroundInfo"
           className={styles.PanelRow}
           defaultSize={50}
+          collapsible={true}
         >
           <div className={styles.playgroundInfoContainer}>
             <div className={styles.playgroundInfoHeader}>
