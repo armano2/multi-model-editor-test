@@ -1,6 +1,7 @@
 import type * as Monaco from 'monaco-editor';
 
 import { toJson } from '../config/utils';
+import versions from './packageVersions.json';
 import type { ConfigModel } from './types';
 
 export const defaultConfig: ConfigModel = {
@@ -23,20 +24,9 @@ export const defaultConfig: ConfigModel = {
   code: `const x = Promise.resolve();\ntype y = Array<string>\n`,
 };
 
-export const tsVersions: string[] = [
-  'next',
-  '4.9.5',
-  '4.8.4',
-  '4.7.4',
-  '4.6.4',
-  '4.5.5',
-  '4.4.4',
-  '4.3.5',
-  '4.2.3',
-  '4.1.5',
-];
+export const tsVersions: string[] = ['next', ...versions.typescript];
 
-export const esTsVersions: string[] = ['5.54.1', '5.49.0', '5.48.2', '5.47.1'];
+export const esTsVersions: string[] = [...versions.eslintPlugin];
 
 export const detailTabs: {
   value: Exclude<ConfigModel['showAST'], undefined>;
