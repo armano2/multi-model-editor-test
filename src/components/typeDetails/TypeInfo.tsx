@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import type * as ts from 'typescript';
 
 import ASTViewer from '../ast/ASTViewer';
 import astStyles from '../ast/ASTViewer.module.css';
 import type { OnHoverNodeFn } from '../ast/types';
+import { isRecord, isTSNode } from '../ast/utils';
 
 export interface TypeInfoProps {
   readonly value: ts.Node;
   readonly program?: ts.Program;
   readonly onHoverNode?: OnHoverNodeFn;
+  readonly onSelect: (value: ts.Node) => void;
 }
 
 interface InfoModel {
@@ -23,6 +25,7 @@ export function TypeInfo({
   value,
   program,
   onHoverNode,
+  onSelect,
 }: TypeInfoProps): JSX.Element {
   const computed = useMemo(() => {
     if (!program) {
@@ -59,6 +62,15 @@ export function TypeInfo({
     return info;
   }, [value, program]);
 
+  const onSelectNode = useCallback(
+    (selection: unknown) => {
+      if (isRecord(selection) && isTSNode(selection) && value !== selection) {
+        onSelect(selection);
+      }
+    },
+    [onSelect]
+  );
+
   if (!program || !computed) {
     return <div>Program not available</div>;
   }
@@ -67,7 +79,11 @@ export function TypeInfo({
     <div>
       <>
         <h4 className="padding--sm margin--none">Node</h4>
-        <ASTViewer onHoverNode={onHoverNode} value={value} />
+        <ASTViewer
+          onClickNode={onSelectNode}
+          onHoverNode={onHoverNode}
+          value={value}
+        />
         <h4 className="padding--sm margin--none">Type</h4>
         {(computed.type && <ASTViewer value={computed.type} />) || (
           <div className={astStyles.list}>None</div>

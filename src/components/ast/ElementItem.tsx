@@ -5,8 +5,13 @@ import styles from './ASTViewer.module.css';
 import HiddenItem from './HiddenItem';
 import ItemGroup from './ItemGroup';
 import PropertyValue from './PropertyValue';
-import type { GetTooltipLabelFn, GetTypeNameFN, OnHoverNodeFn } from './types';
-import type { ParentNodeType } from './types';
+import type {
+  GetTooltipLabelFn,
+  GetTypeNameFN,
+  OnHoverNodeFn,
+  OnClickNodeFn,
+  ParentNodeType,
+} from './types';
 import { getNodeType, getRange, objType } from './utils';
 
 export interface ElementItemProps {
@@ -16,6 +21,7 @@ export interface ElementItemProps {
   readonly level: string;
   readonly value: unknown;
   readonly onHoverNode?: OnHoverNodeFn;
+  readonly onClickNode?: OnClickNodeFn;
   readonly parentNodeType?: ParentNodeType;
   readonly selectedPath?: string;
 }
@@ -56,6 +62,7 @@ function ElementItem({
   getTypeName,
   getTooltipLabel,
   parentNodeType,
+  onClickNode,
 }: ElementItemProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => level === 'ast');
   const isSelected = useMemo(() => {
@@ -113,6 +120,7 @@ function ElementItem({
           onHoverNode?.(v ? computedValue.range : undefined)
         }
         canExpand={true}
+        onClickType={(): void => onClickNode?.(value)}
         onClick={(): void => setIsExpanded(!isExpanded)}
       >
         <span>{computedValue.type === 'Array' ? '[' : '{'}</span>
@@ -126,6 +134,7 @@ function ElementItem({
                   selectedPath={selectedPath}
                   value={item}
                   propName={key}
+                  onClickNode={onClickNode}
                   onHoverNode={onHoverNode}
                   getTypeName={getTypeName}
                   getTooltipLabel={getTooltipLabel}

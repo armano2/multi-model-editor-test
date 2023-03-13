@@ -8,11 +8,16 @@ export interface PropertyNameProps {
   readonly typeName?: string;
   readonly propName?: string;
   readonly onClick?: (e: MouseEvent<HTMLElement>) => void;
+  readonly onClickType?: (e: MouseEvent<HTMLElement>) => void;
   readonly onHover?: (e: boolean) => void;
 }
 
 export default function PropertyName(props: PropertyNameProps): JSX.Element {
-  const { onClick: onClickProps, onHover } = props;
+  const {
+    onClick: onClickProps,
+    onClickType: onClickTypeProps,
+    onHover,
+  } = props;
 
   const onClick = useCallback(
     (e: MouseEvent<HTMLElement>) => {
@@ -20,6 +25,15 @@ export default function PropertyName(props: PropertyNameProps): JSX.Element {
       onClickProps?.(e);
     },
     [onClickProps]
+  );
+
+  const onClickType = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      onClickProps?.(e);
+      onClickTypeProps?.(e);
+    },
+    [onClickProps, onClickTypeProps]
   );
 
   const onMouseEnter = useCallback(() => {
@@ -49,7 +63,7 @@ export default function PropertyName(props: PropertyNameProps): JSX.Element {
           href={`#${props.typeName}`}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
-          onClick={onClick}
+          onClick={onClickType}
           className={styles.tokenName}
         >
           {props.typeName}

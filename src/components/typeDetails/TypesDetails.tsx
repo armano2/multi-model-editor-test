@@ -59,6 +59,7 @@ export function TypesDetails({
           <div className={playgroundStyles.playgroundInfoContainer}>
             <TypeInfo
               onHoverNode={onHoverNode}
+              onSelect={setSelectedNode}
               program={program}
               value={selectedNode}
             />

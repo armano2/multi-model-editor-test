@@ -12,6 +12,7 @@ export interface ItemGroupProps {
   readonly isExpanded?: boolean;
   readonly canExpand?: boolean;
   readonly onClick?: (e: MouseEvent<HTMLElement>) => void;
+  readonly onClickType?: (e: MouseEvent<HTMLElement>) => void;
   readonly onHover?: (e: boolean) => void;
   readonly children: JSX.Element | false | (JSX.Element | false)[];
 }
@@ -24,6 +25,7 @@ export default function ItemGroup({
   isExpanded,
   canExpand,
   onClick,
+  onClickType,
   onHover,
   children,
 }: ItemGroupProps): JSX.Element {
@@ -43,6 +45,7 @@ export default function ItemGroup({
         propName={propName}
         typeName={typeName}
         onHover={onHover}
+        onClickType={onClickType}
         onClick={(canExpand && onClick) || undefined}
       />
       {React.Children.map(children, (child) => child)}
