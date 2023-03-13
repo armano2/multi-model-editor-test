@@ -150,13 +150,13 @@ export function TypesDetails(props: TypesDetailsProps): JSX.Element {
         </div>
       </Panel>
       <PanelResizeHandle className={playgroundStyles.PanelResizeHandle} />
-      <Panel id="typeInfo" collapsible={true}>
-        <div className={playgroundStyles.playgroundInfoContainer}>
-          {selectedNode && (
+      {selectedNode && (
+        <Panel id="typeInfo" collapsible={true}>
+          <div className={playgroundStyles.playgroundInfoContainer}>
             <TypeInfo program={props.program} value={selectedNode} />
-          )}
-        </div>
-      </Panel>
+          </div>
+        </Panel>
+      )}
     </PanelGroup>
   );
 }
