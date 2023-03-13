@@ -7,7 +7,7 @@ import { scrollIntoViewIfNeeded } from '../util/scroll-into';
 import styles from './ASTViewer.module.css';
 import ElementItem from './ElementItem';
 import { findSelectionPath } from './selectedRange';
-import type { OnHoverNodeFn, OnClickNodeFn } from './types';
+import type { OnClickNodeFn, OnHoverNodeFn } from './types';
 import { getTooltipLabel, getTypeName } from './utils';
 
 export interface ASTViewerProps {

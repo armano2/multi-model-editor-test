@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type * as ts from 'typescript';
 
 import ASTViewer from '../ast/ASTViewer';
@@ -68,7 +68,7 @@ export function TypeInfo({
         onSelect(selection);
       }
     },
-    [onSelect]
+    [onSelect, value]
   );
 
   if (!program || !computed) {

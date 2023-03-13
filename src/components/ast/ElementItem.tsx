@@ -8,8 +8,8 @@ import PropertyValue from './PropertyValue';
 import type {
   GetTooltipLabelFn,
   GetTypeNameFN,
-  OnHoverNodeFn,
   OnClickNodeFn,
+  OnHoverNodeFn,
   ParentNodeType,
 } from './types';
 import { getNodeType, getRange, objType } from './utils';
