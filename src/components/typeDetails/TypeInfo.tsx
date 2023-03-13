@@ -86,25 +86,28 @@ export function TypeInfo({
           value={value}
         />
         <h4 className="padding--sm margin--none">Type</h4>
-        {(computed.type && <ASTViewer value={computed.type} />) || (
-          <div className={astStyles.list}>None</div>
-        )}
+        {(computed.type && (
+          <ASTViewer onHoverNode={onHoverNode} value={computed.type} />
+        )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Type to string</h4>
         {(computed.stringType && <ASTViewer value={computed.stringType} />) || (
           <div className={astStyles.list}>None</div>
         )}
         <h4 className="padding--sm margin--none">Contextual Type</h4>
         {(computed.contextualType && (
-          <ASTViewer value={computed.contextualType} />
+          <ASTViewer
+            onHoverNode={onHoverNode}
+            value={computed.contextualType}
+          />
         )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Symbol</h4>
-        {(computed.symbol && <ASTViewer value={computed.symbol} />) || (
-          <div className={astStyles.list}>None</div>
-        )}
+        {(computed.symbol && (
+          <ASTViewer onHoverNode={onHoverNode} value={computed.symbol} />
+        )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Signature</h4>
-        {(computed.signature && <ASTViewer value={computed.signature} />) || (
-          <div className={astStyles.list}>None</div>
-        )}
+        {(computed.signature && (
+          <ASTViewer onHoverNode={onHoverNode} value={computed.signature} />
+        )) || <div className={astStyles.list}>None</div>}
       </>
     </div>
   );
