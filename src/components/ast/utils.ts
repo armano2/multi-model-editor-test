@@ -70,13 +70,15 @@ export function getNodeType(
       return 'scopeReference';
     } else if ('kind' in value && 'pos' in value && 'flags' in value) {
       return 'tsNode';
-    } else if ('getBaseTypes' in value && value.getBaseTypes != null) {
+    } else if ('getSymbol' in value) {
       return 'tsType';
     } else if ('getDeclarations' in value && value.getDeclarations != null) {
       return 'tsSymbol';
+    } else if ('getParameters' in value && value.getParameters != null) {
+      return 'tsSignature';
     } else if (
       'flags' in value &&
-      (propName === 'flowNode' || propName === 'endFlowNode')
+      ('antecedent' in value || 'antecedents' in value || 'consequent' in value)
     ) {
       return 'tsFlow';
     }
@@ -116,7 +118,9 @@ export function getTypeName(
       case 'tsType':
         return '[Type]';
       case 'tsSymbol':
-        return '[Symbol]';
+        return `Symbol(${String(value.escapedName)})`;
+      case 'tsSignature':
+        return '[Signature]';
       case 'tsFlow':
         return '[FlowNode]';
     }
@@ -158,6 +162,8 @@ export function getTooltipLabel(
       case 'tsType':
         if (propName === 'flags') {
           return expandFlags('TypeFlags', value);
+        } else if (propName === 'objectFlags') {
+          return expandFlags('ObjectFlags', value);
         }
         break;
       case 'tsSymbol':
@@ -223,4 +229,43 @@ export function getRange(
     }
   }
   return undefined;
+}
+
+export function filterProperties(
+  key: string,
+  value: unknown,
+  type: ParentNodeType
+): boolean {
+  if (
+    value === undefined ||
+    // typeof value === 'function' ||
+    key.startsWith('_')
+  ) {
+    return false;
+  }
+
+  switch (type) {
+    case 'esNode':
+      return key !== 'tokens' && key !== 'comments';
+    case 'tsNode':
+      return (
+        key !== 'nextContainer' &&
+        key !== 'parseDiagnostics' &&
+        key !== 'bindDiagnostics' &&
+        key !== 'lineMap' &&
+        key !== 'flowNode' &&
+        key !== 'endFlowNode' &&
+        key !== 'jsDocCache' &&
+        key !== 'jsDoc' &&
+        key !== 'symbol'
+      );
+    case 'tsType':
+      return (
+        key !== 'checker' &&
+        key !== 'constructSignatures' &&
+        key !== 'callSignatures'
+      );
+  }
+
+  return true;
 }

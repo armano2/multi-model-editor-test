@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import styles from './ASTViewer.module.css';
 import { objType } from './utils';
+import Link from '../inputs/Link';
 
 export interface PropertyValueProps {
   readonly value: unknown;
@@ -21,6 +22,8 @@ export type ASTViewerModelTypeSimple =
 export interface SimpleModel {
   readonly value: string;
   readonly type: ASTViewerModelTypeSimple;
+  readonly className: string;
+  shortValue?: string;
 }
 
 export function getSimpleModel(data: unknown): SimpleModel {
@@ -28,69 +31,82 @@ export function getSimpleModel(data: unknown): SimpleModel {
     return {
       value: JSON.stringify(data),
       type: 'string',
+      className: styles.propString,
     };
   } else if (typeof data === 'number') {
     return {
       value: String(data),
       type: 'number',
+      className: styles.propNumber,
     };
   } else if (typeof data === 'bigint') {
     return {
       value: `${data}n`,
       type: 'bigint',
+      className: styles.propNumber,
     };
   } else if (data instanceof RegExp) {
     return {
       value: String(data),
       type: 'regexp',
+      className: styles.propRegExp,
     };
   } else if (data == null) {
     return {
       value: String(data),
       type: 'undefined',
+      className: styles.propEmpty,
     };
   } else if (typeof data === 'boolean') {
     return {
       value: data ? 'true' : 'false',
       type: 'boolean',
+      className: styles.propBoolean,
     };
   } else if (data instanceof Error) {
     return {
       value: `Error: ${data.message}`,
       type: 'error',
+      className: styles.propError,
     };
   }
   return {
     value: objType(data),
     type: 'class',
+    className: styles.propClass,
   };
 }
 
 function PropertyValue({ value }: PropertyValueProps): JSX.Element {
+  const [expand, setExpand] = useState(false);
+
   const model = useMemo(() => {
-    return getSimpleModel(value);
+    const val = getSimpleModel(value);
+    if (val.value.length > 250) {
+      val.shortValue = val.value.substring(0, 200);
+    }
+    return val;
   }, [value]);
 
-  switch (model.type) {
-    case 'string':
-      return <span className={styles.propString}>{model.value}</span>;
-    case 'bigint':
-      return <span className={styles.propNumber}>{model.value}</span>;
-    case 'number':
-      return <span className={styles.propNumber}>{model.value}</span>;
-    case 'regexp':
-      return <span className={styles.propRegExp}>{model.value}</span>;
-    case 'undefined':
-      return <span className={styles.propEmpty}>{model.value}</span>;
-    case 'boolean':
-      return <span className={styles.propBoolean}>{model.value}</span>;
-    case 'error':
-      return <span className={styles.propError}>{model.value}</span>;
-    case 'class':
-    case 'ref':
-    default:
-      return <span className={styles.propClass}>{model.value}</span>;
+  if (model.shortValue) {
+    return (
+      <span className={model.className}>
+        {!expand ? `${model.shortValue}...` : model.value}{' '}
+        <Link
+          onClick={(e) => {
+            e.preventDefault();
+            setExpand((expand) => !expand);
+          }}
+          href="#read-more"
+          className={styles.propEllipsis}
+        >
+          {!expand ? '(read more)' : '(read less)'}
+        </Link>
+      </span>
+    );
   }
+
+  return <span className={model.className}>{model.value}</span>;
 }
 
 export default PropertyValue;

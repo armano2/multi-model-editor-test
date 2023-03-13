@@ -11,6 +11,7 @@ export type ParentNodeType =
   | 'tsNode'
   | 'tsType'
   | 'tsSymbol'
+  | 'tsSignature'
   | 'tsFlow'
   | 'scope'
   | 'scopeVariable'

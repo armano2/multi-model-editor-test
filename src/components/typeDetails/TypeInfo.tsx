@@ -19,6 +19,7 @@ interface InfoModel {
   stringType?: unknown;
   contextualType?: unknown;
   signature?: unknown;
+  flowNode?: unknown;
 }
 
 export function TypeInfo({
@@ -28,7 +29,7 @@ export function TypeInfo({
   onSelect,
 }: TypeInfoProps): JSX.Element {
   const computed = useMemo(() => {
-    if (!program) {
+    if (!program || !value) {
       return undefined;
     }
     const info: InfoModel = {};
@@ -37,9 +38,16 @@ export function TypeInfo({
       const type = typeChecker.getTypeAtLocation(value);
       info.type = type;
       info.stringType = typeChecker.typeToString(type);
+      info.symbol = type.getSymbol();
+      let signature = type.getCallSignatures();
+      if (signature.length === 0) {
+        signature = type.getCallSignatures();
+      }
+      info.signature = signature.length > 0 ? signature : undefined;
+      // @ts-expect-error not part of public api
+      info.flowNode = value.flowNode ?? value.endFlowNode ?? undefined;
     } catch (e: unknown) {
       info.type = e;
-      info.stringType = e;
     }
     try {
       // @ts-expect-error just fail if node type is not correct
@@ -47,18 +55,6 @@ export function TypeInfo({
     } catch (_e: unknown) {
       info.contextualType = undefined;
     }
-    try {
-      info.symbol = typeChecker.getSymbolAtLocation(value);
-    } catch (e: unknown) {
-      info.symbol = e;
-    }
-    try {
-      // @ts-expect-error just fail if node type is not correct
-      info.signature = typeChecker.getResolvedSignature(value);
-    } catch (_e: unknown) {
-      info.signature = undefined;
-    }
-
     return info;
   }, [value, program]);
 
@@ -90,9 +86,9 @@ export function TypeInfo({
           <ASTViewer onHoverNode={onHoverNode} value={computed.type} />
         )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Type to string</h4>
-        {(computed.stringType && <ASTViewer value={computed.stringType} />) || (
-          <div className={astStyles.list}>None</div>
-        )}
+        {(computed.stringType && (
+          <ASTViewer hideCopyButton={true} value={computed.stringType} />
+        )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Contextual Type</h4>
         {(computed.contextualType && (
           <ASTViewer
@@ -107,6 +103,10 @@ export function TypeInfo({
         <h4 className="padding--sm margin--none">Signature</h4>
         {(computed.signature && (
           <ASTViewer onHoverNode={onHoverNode} value={computed.signature} />
+        )) || <div className={astStyles.list}>None</div>}
+        <h4 className="padding--sm margin--none">FlowNode</h4>
+        {(computed.flowNode && (
+          <ASTViewer onHoverNode={onHoverNode} value={computed.flowNode} />
         )) || <div className={astStyles.list}>None</div>}
       </>
     </div>

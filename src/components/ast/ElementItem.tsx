@@ -12,7 +12,7 @@ import type {
   OnHoverNodeFn,
   ParentNodeType,
 } from './types';
-import { getNodeType, getRange, objType } from './utils';
+import { filterProperties, getNodeType, getRange, objType } from './utils';
 
 export interface ElementItemProps {
   readonly getTypeName: GetTypeNameFN;
@@ -83,12 +83,8 @@ function ElementItem({
         group: 'iterable',
         typeName: getTypeName(type, value, propName, nodeType),
         nodeType: nodeType,
-        value: getValues(value).filter(
-          (item) =>
-            item[1] !== undefined &&
-            !item[0].startsWith('_') &&
-            // TODO: add ability to filter per type
-            item[0] !== 'checker'
+        value: getValues(value).filter((item) =>
+          filterProperties(item[0], item[1], nodeType)
         ),
         range: getRange(value, nodeType),
       };

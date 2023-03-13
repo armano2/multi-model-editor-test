@@ -11,6 +11,10 @@
   min-width: 100%;
 }
 
+.list * {
+  vertical-align: top;
+}
+
 .list,
 .subList {
   box-sizing: border-box;
@@ -56,7 +60,7 @@
 .propBoolean,
 .propError,
 .propString {
-  display: inline-flex;
+  display: inline-block;
   max-width: 600px;
 }
 

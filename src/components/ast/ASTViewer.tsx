@@ -17,6 +17,7 @@ export interface ASTViewerProps {
   readonly value: unknown;
   readonly filter?: ESQuery.Selector;
   readonly enableScrolling?: boolean;
+  readonly hideCopyButton?: boolean;
 }
 
 function tryToApplyFilter<T>(value: T, filter?: ESQuery.Selector): T | T[] {
@@ -39,6 +40,7 @@ function ASTViewer({
   value,
   filter,
   enableScrolling,
+  hideCopyButton,
 }: ASTViewerProps): JSX.Element {
   const model = useMemo(() => {
     if (filter) {
@@ -79,7 +81,7 @@ function ASTViewer({
         selectedPath={selectedPath}
         getTooltipLabel={getTooltipLabel}
       />
-      <CopyButton value={model} />
+      {!hideCopyButton && <CopyButton value={model} />}
     </div>
   );
 }
