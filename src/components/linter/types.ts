@@ -4,8 +4,9 @@ import type * as ts from 'typescript';
 
 export interface UpdateModel {
   storedAST?: TSESTree.Program;
-  storedTsAST?: ts.SourceFile;
+  storedTsAST?: ts.Node;
   storedScope?: ScopeManager;
+  program?: ts.Program;
 }
 
 export interface Disposable {

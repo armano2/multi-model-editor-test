@@ -79,6 +79,7 @@ export function createParser(
         storedAST: converted.estree,
         storedTsAST: tsAst,
         storedScope: scopeManager,
+        program: program,
       });
 
       return {

@@ -2,7 +2,6 @@ import type * as ESQuery from 'esquery';
 import React, { useEffect, useMemo } from 'react';
 
 import CopyButton from '../inputs/CopyButton';
-import type { UpdateModel } from '../linter/types';
 import { debounce } from '../util/debounce';
 import { scrollIntoViewIfNeeded } from '../util/scroll-into';
 import styles from './ASTViewer.module.css';
@@ -13,9 +12,8 @@ import { getTooltipLabel, getTypeName } from './utils';
 
 export interface ASTViewerProps {
   readonly cursorPosition?: number;
-  readonly onSelectNode: OnSelectNodeFn;
-  readonly value: UpdateModel;
-  readonly tab: false | string;
+  readonly onSelectNode?: OnSelectNodeFn;
+  readonly value: unknown;
   readonly filter?: ESQuery.Selector;
   readonly enableScrolling?: boolean;
 }
@@ -37,21 +35,15 @@ function ASTViewer({
   cursorPosition,
   onSelectNode,
   value,
-  tab,
   filter,
   enableScrolling,
 }: ASTViewerProps): JSX.Element {
   const model = useMemo(() => {
-    if (tab === 'ts') {
-      return value.storedTsAST;
-    } else if (tab === 'scope') {
-      return value.storedScope;
-    } else if (tab === 'es') {
-      return tryToApplyFilter(value.storedAST, filter);
-    } else {
-      return [];
+    if (filter) {
+      return tryToApplyFilter(value, filter);
     }
-  }, [value, filter, tab]);
+    return value;
+  }, [value, filter]);
 
   const selectedPath = useMemo(() => {
     if (cursorPosition == null || !model || typeof model !== 'object') {

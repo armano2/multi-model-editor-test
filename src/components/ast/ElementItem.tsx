@@ -15,7 +15,7 @@ export interface ElementItemProps {
   readonly propName?: string;
   readonly level: string;
   readonly value: unknown;
-  readonly onSelectNode: OnSelectNodeFn;
+  readonly onSelectNode?: OnSelectNodeFn;
   readonly parentNodeType?: ParentNodeType;
   readonly selectedPath?: string;
 }
@@ -32,7 +32,7 @@ interface ComputedValueIterable {
 interface ComputedValueSimple {
   type: string;
   group: 'simple';
-  tooltip: string | undefined;
+  tooltip?: string;
 }
 
 type ComputedValue = ComputedValueIterable | ComputedValueSimple;
@@ -54,7 +54,12 @@ function ElementItem({
 
   const computedValue = useMemo((): ComputedValue => {
     const type = objType(value);
-    if ((value && typeof value === 'object') || Array.isArray(value)) {
+    if (value instanceof Error) {
+      return {
+        type: type,
+        group: 'simple',
+      };
+    } else if ((value && typeof value === 'object') || Array.isArray(value)) {
       const nodeType = getNodeType(type, value, propName);
       return {
         type: type,
@@ -62,9 +67,13 @@ function ElementItem({
         typeName: getTypeName(type, value, propName, nodeType),
         nodeType: nodeType,
         value: Object.entries(value).filter(
-          (item) => item[1] !== undefined && !item[0].startsWith('_')
+          (item) =>
+            item[1] !== undefined &&
+            !item[0].startsWith('_') &&
+            // TODO: add ability to filter per type
+            item[0] !== 'checker'
         ),
-        range: getRange(type, value, propName, nodeType),
+        range: getRange(type, value, nodeType),
       };
     } else {
       return {
@@ -90,7 +99,9 @@ function ElementItem({
         typeName={computedValue.typeName}
         isExpanded={isExpanded}
         isSelected={isSelected}
-        onHover={(v): void => onSelectNode(v ? computedValue.range : undefined)}
+        onHover={(v): void =>
+          onSelectNode?.(v ? computedValue.range : undefined)
+        }
         canExpand={true}
         onClick={(): void => setIsExpanded(!isExpanded)}
       >

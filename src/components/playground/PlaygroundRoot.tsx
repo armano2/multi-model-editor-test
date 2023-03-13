@@ -19,6 +19,7 @@ import Options from './Options';
 import styles from './playground.module.css';
 import PlaygroundEditor from './PlaygroundEditor';
 import type { ErrorGroup, PlaygroundSystem } from './types';
+import { TypesDetails } from './TypesDetails';
 
 function PlaygroundRoot(): JSX.Element {
   const [config, setConfig] = useHashState(defaultConfig);
@@ -97,7 +98,6 @@ function PlaygroundRoot(): JSX.Element {
           id="playgroundMenu"
           className={styles.PanelRow}
           defaultSize={13}
-          maxSize={20}
           collapsible={true}
         >
           <div className={styles.playgroundMenu}>
@@ -155,12 +155,22 @@ function PlaygroundRoot(): JSX.Element {
             <div className={styles.playgroundInfo}>
               {!config.showAST || !astModel ? (
                 <ErrorsViewer value={errors} />
+              ) : config.showAST === 'types' && astModel.storedTsAST ? (
+                <TypesDetails
+                  program={astModel.program}
+                  value={astModel.storedTsAST}
+                />
               ) : (
                 <ASTViewer
                   key={config.showAST}
                   filter={config.showAST === 'es' ? esQueryFilter : undefined}
-                  value={astModel}
-                  tab={config.showAST}
+                  value={
+                    config.showAST === 'ts'
+                      ? astModel.storedTsAST
+                      : config.showAST === 'scope'
+                      ? astModel.storedScope
+                      : astModel.storedAST
+                  }
                   enableScrolling={enableScrolling}
                   cursorPosition={cursorPosition}
                   onSelectNode={setSelectedRange}

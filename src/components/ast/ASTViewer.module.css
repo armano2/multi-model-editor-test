@@ -71,6 +71,10 @@
   color: var(--token-color-boolean);
 }
 
+.propError {
+  color: var(--token-color-deleted);
+}
+
 .propString {
   color: var(--token-color-string);
 }

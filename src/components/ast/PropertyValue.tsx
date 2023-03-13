@@ -15,7 +15,8 @@ export type ASTViewerModelTypeSimple =
   | 'boolean'
   | 'bigint'
   | 'regexp'
-  | 'undefined';
+  | 'undefined'
+  | 'error';
 
 export interface SimpleModel {
   readonly value: string;
@@ -53,6 +54,11 @@ export function getSimpleModel(data: unknown): SimpleModel {
       value: data ? 'true' : 'false',
       type: 'boolean',
     };
+  } else if (data instanceof Error) {
+    return {
+      value: `Error: ${data.message}`,
+      type: 'error',
+    };
   }
   return {
     value: objType(data),
@@ -78,6 +84,8 @@ function PropertyValue({ value }: PropertyValueProps): JSX.Element {
       return <span className={styles.propEmpty}>{model.value}</span>;
     case 'boolean':
       return <span className={styles.propBoolean}>{model.value}</span>;
+    case 'error':
+      return <span className={styles.propError}>{model.value}</span>;
     case 'class':
     case 'ref':
     default:

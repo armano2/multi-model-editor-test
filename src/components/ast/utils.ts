@@ -155,6 +155,11 @@ export function getTooltipLabel(
         }
         break;
       }
+      case 'tsType':
+        if (propName === 'flags') {
+          return expandFlags('TypeFlags', value);
+        }
+        break;
       case 'tsSymbol':
         if (propName === 'flags') {
           return expandFlags('SymbolFlags', value);
@@ -184,10 +189,9 @@ function getValidRange(range: unknown): [number, number] | undefined {
 export function getRange(
   typeName: string,
   value: unknown,
-  _propName?: string,
   valueType?: ParentNodeType
 ): [number, number] | undefined {
-  if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
+  if (Boolean(value) && isRecord(value)) {
     switch (valueType) {
       case 'esNode':
         return getValidRange(value.range);
