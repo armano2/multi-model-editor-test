@@ -16,15 +16,10 @@ export interface TypesDetailsProps {
 
 interface SimplifiedItemProps {
   readonly value: ts.Node;
-  readonly indent: number;
   readonly onSelect: (value: ts.Node) => void;
 }
 
-function SimplifiedItem({
-  value,
-  indent,
-  onSelect,
-}: SimplifiedItemProps): JSX.Element {
+function SimplifiedItem({ value, onSelect }: SimplifiedItemProps): JSX.Element {
   const items = useMemo(() => {
     const result: ts.Node[] = [];
     value.forEachChild((child) => {
@@ -34,37 +29,38 @@ function SimplifiedItem({
   }, [value]);
 
   return (
-    <>
-      <div>
-        <Link
-          href={`#${value.kind}`}
-          className={astStyles.tokenName}
-          style={{ marginLeft: `${indent * 10}px` }}
-          onClick={(e): void => {
-            e.preventDefault();
-            onSelect(value);
-          }}
-        >
-          {tsEnumValue('SyntaxKind', value.kind)}
-        </Link>
+    <div className={astStyles.expand}>
+      <Link
+        href={`#${value.kind}`}
+        className={astStyles.tokenName}
+        onClick={(e): void => {
+          e.preventDefault();
+          onSelect(value);
+        }}
+      >
+        {tsEnumValue('SyntaxKind', value.kind)}
+      </Link>
+      <div className={astStyles.subList}>
+        {items.map((item, index) => {
+          return (
+            <SimplifiedItem
+              value={item}
+              onSelect={onSelect}
+              key={index.toString()}
+            />
+          );
+        })}
       </div>
-      {items.map((item, index) => {
-        return (
-          <SimplifiedItem
-            indent={indent + 1}
-            value={item}
-            onSelect={onSelect}
-            key={index.toString()}
-          />
-        );
-      })}
-    </>
+    </div>
   );
 }
 
 interface InfoModel {
   type?: unknown;
   symbol?: unknown;
+  stringType?: unknown;
+  contextualType?: unknown;
+  signature?: unknown;
 }
 
 export function TypeInfo({ value, program }: TypesDetailsProps): JSX.Element {
@@ -75,14 +71,29 @@ export function TypeInfo({ value, program }: TypesDetailsProps): JSX.Element {
     const info: InfoModel = {};
     const typeChecker = program.getTypeChecker();
     try {
-      info.type = typeChecker.getTypeAtLocation(value);
+      const type = typeChecker.getTypeAtLocation(value);
+      info.type = type;
+      info.stringType = typeChecker.typeToString(type);
     } catch (e: unknown) {
       info.type = e;
+      info.stringType = e;
+    }
+    try {
+      // @ts-expect-error just fail if node type is not correct
+      info.contextualType = typeChecker.getContextualType(value);
+    } catch (_e: unknown) {
+      info.contextualType = undefined;
     }
     try {
       info.symbol = typeChecker.getSymbolAtLocation(value);
     } catch (e: unknown) {
       info.symbol = e;
+    }
+    try {
+      // @ts-expect-error just fail if node type is not correct
+      info.signature = typeChecker.getResolvedSignature(value);
+    } catch (_e: unknown) {
+      info.signature = undefined;
     }
 
     return info;
@@ -95,12 +106,28 @@ export function TypeInfo({ value, program }: TypesDetailsProps): JSX.Element {
   return (
     <div>
       <>
-        <h3>Node</h3>
+        <h4 className="padding--sm margin--none">Node</h4>
         <ASTViewer value={value} />
-        <h3>Type</h3>
-        {computed.type && <ASTViewer value={computed.type} />}
-        <h3>Symbol</h3>
-        {computed.symbol && <ASTViewer value={computed.symbol} />}
+        <h4 className="padding--sm margin--none">Type</h4>
+        {(computed.type && <ASTViewer value={computed.type} />) || (
+          <div className={astStyles.list}>None</div>
+        )}
+        <h4 className="padding--sm margin--none">Type to string</h4>
+        {(computed.stringType && <ASTViewer value={computed.stringType} />) || (
+          <div className={astStyles.list}>None</div>
+        )}
+        <h4 className="padding--sm margin--none">Contextual Type</h4>
+        {(computed.contextualType && (
+          <ASTViewer value={computed.contextualType} />
+        )) || <div className={astStyles.list}>None</div>}
+        <h4 className="padding--sm margin--none">Symbol</h4>
+        {(computed.symbol && <ASTViewer value={computed.symbol} />) || (
+          <div className={astStyles.list}>None</div>
+        )}
+        <h4 className="padding--sm margin--none">Signature</h4>
+        {(computed.signature && <ASTViewer value={computed.signature} />) || (
+          <div className={astStyles.list}>None</div>
+        )}
       </>
     </div>
   );
@@ -118,11 +145,7 @@ export function TypesDetails(props: TypesDetailsProps): JSX.Element {
       <Panel id="simplifiedTree" defaultSize={35} collapsible={true}>
         <div className={playgroundStyles.playgroundInfoContainer}>
           <div className={astStyles.list}>
-            <SimplifiedItem
-              onSelect={setSelectedNode}
-              indent={0}
-              value={props.value}
-            />
+            <SimplifiedItem onSelect={setSelectedNode} value={props.value} />
           </div>
         </div>
       </Panel>
