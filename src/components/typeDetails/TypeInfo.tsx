@@ -16,10 +16,24 @@ export interface TypeInfoProps {
 interface InfoModel {
   type?: unknown;
   symbol?: unknown;
-  stringType?: unknown;
+  stringType?: string;
   contextualType?: unknown;
+  contextualTypeString?: string;
   signature?: unknown;
   flowNode?: unknown;
+}
+
+function SimpleField(props: {
+  value: string | undefined;
+  label: string;
+}): JSX.Element {
+  return (
+    <div className={astStyles.list}>
+      <span className={astStyles.propClass}>{props.label}</span>
+      <span>: </span>
+      <span className={astStyles.propString}>{String(props.value)}</span>
+    </div>
+  );
 }
 
 export function TypeInfo({
@@ -51,7 +65,11 @@ export function TypeInfo({
     }
     try {
       // @ts-expect-error just fail if node type is not correct
-      info.contextualType = typeChecker.getContextualType(value);
+      const contextualType = typeChecker.getContextualType(value);
+      info.contextualType = contextualType;
+      if (contextualType) {
+        info.contextualTypeString = typeChecker.typeToString(contextualType);
+      }
     } catch (_e: unknown) {
       info.contextualType = undefined;
     }
@@ -83,18 +101,23 @@ export function TypeInfo({
         />
         <h4 className="padding--sm margin--none">Type</h4>
         {(computed.type && (
-          <ASTViewer onHoverNode={onHoverNode} value={computed.type} />
-        )) || <div className={astStyles.list}>None</div>}
-        <h4 className="padding--sm margin--none">Type to string</h4>
-        {(computed.stringType && (
-          <ASTViewer hideCopyButton={true} value={computed.stringType} />
+          <>
+            <SimpleField value={computed.stringType} label="typeToString()" />
+            <ASTViewer onHoverNode={onHoverNode} value={computed.type} />
+          </>
         )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Contextual Type</h4>
         {(computed.contextualType && (
-          <ASTViewer
-            onHoverNode={onHoverNode}
-            value={computed.contextualType}
-          />
+          <>
+            <SimpleField
+              value={computed.contextualTypeString}
+              label="typeToString()"
+            />
+            <ASTViewer
+              onHoverNode={onHoverNode}
+              value={computed.contextualType}
+            />
+          </>
         )) || <div className={astStyles.list}>None</div>}
         <h4 className="padding--sm margin--none">Symbol</h4>
         {(computed.symbol && (
