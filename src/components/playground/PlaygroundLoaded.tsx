@@ -76,10 +76,13 @@ export default function PlaygroundLoaded({
       if (!model) {
         let code: string | undefined = '';
         if (isCodeFile(activeUri.path)) {
-          const currentUri = monaco.Uri.file(currentFile.path);
-          code = system.readFile(currentUri.path);
-          // system.removeFile(currentUri.path);
-          monaco.editor.getModel(currentUri)?.dispose();
+          const codeModel = monaco.editor
+            .getModels()
+            .find((m) => isCodeFile(m.uri.path));
+          if (codeModel) {
+            code = codeModel.getValue();
+            codeModel?.dispose();
+          }
           system.writeFile(activeUri.path, code ?? '');
         } else {
           code = system.readFile(activeUri.path);

@@ -55,7 +55,7 @@ export function TypeInfo({
       info.symbol = type.getSymbol();
       let signature = type.getCallSignatures();
       if (signature.length === 0) {
-        signature = type.getCallSignatures();
+        signature = type.getConstructSignatures();
       }
       info.signature = signature.length > 0 ? signature : undefined;
       // @ts-expect-error not part of public api

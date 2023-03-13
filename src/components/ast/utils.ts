@@ -43,11 +43,7 @@ export function isTSNode(value: object): value is ts.Node {
   return 'kind' in value && 'pos' in value && 'flags' in value;
 }
 
-export function getNodeType(
-  typeName: string,
-  value: unknown,
-  propName?: string
-): ParentNodeType {
+export function getNodeType(typeName: string, value: unknown): ParentNodeType {
   if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
     if (isESNode(value)) {
       return 'esNode';
@@ -265,6 +261,8 @@ export function filterProperties(
         key !== 'constructSignatures' &&
         key !== 'callSignatures'
       );
+    case 'tsSignature':
+      return key !== 'checker';
   }
 
   return true;

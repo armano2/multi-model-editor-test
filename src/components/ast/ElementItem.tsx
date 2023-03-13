@@ -77,7 +77,7 @@ function ElementItem({
         group: 'simple',
       };
     } else if ((value && typeof value === 'object') || Array.isArray(value)) {
-      const nodeType = getNodeType(type, value, propName);
+      const nodeType = getNodeType(type, value);
       return {
         type: type,
         group: 'iterable',
