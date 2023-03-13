@@ -5,7 +5,7 @@ import styles from './ASTViewer.module.css';
 import HiddenItem from './HiddenItem';
 import ItemGroup from './ItemGroup';
 import PropertyValue from './PropertyValue';
-import type { GetTooltipLabelFn, GetTypeNameFN, OnSelectNodeFn } from './types';
+import type { GetTooltipLabelFn, GetTypeNameFN, OnHoverNodeFn } from './types';
 import type { ParentNodeType } from './types';
 import { getNodeType, getRange, objType } from './utils';
 
@@ -15,7 +15,7 @@ export interface ElementItemProps {
   readonly propName?: string;
   readonly level: string;
   readonly value: unknown;
-  readonly onSelectNode?: OnSelectNodeFn;
+  readonly onHoverNode?: OnHoverNodeFn;
   readonly parentNodeType?: ParentNodeType;
   readonly selectedPath?: string;
 }
@@ -52,7 +52,7 @@ function ElementItem({
   selectedPath,
   propName,
   value,
-  onSelectNode,
+  onHoverNode,
   getTypeName,
   getTooltipLabel,
   parentNodeType,
@@ -83,7 +83,7 @@ function ElementItem({
             // TODO: add ability to filter per type
             item[0] !== 'checker'
         ),
-        range: getRange(type, value, nodeType),
+        range: getRange(value, nodeType),
       };
     } else {
       return {
@@ -110,7 +110,7 @@ function ElementItem({
         isExpanded={isExpanded}
         isSelected={isSelected}
         onHover={(v): void =>
-          onSelectNode?.(v ? computedValue.range : undefined)
+          onHoverNode?.(v ? computedValue.range : undefined)
         }
         canExpand={true}
         onClick={(): void => setIsExpanded(!isExpanded)}
@@ -126,7 +126,7 @@ function ElementItem({
                   selectedPath={selectedPath}
                   value={item}
                   propName={key}
-                  onSelectNode={onSelectNode}
+                  onHoverNode={onHoverNode}
                   getTypeName={getTypeName}
                   getTooltipLabel={getTooltipLabel}
                   parentNodeType={computedValue.nodeType}

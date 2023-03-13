@@ -187,7 +187,6 @@ function getValidRange(range: unknown): [number, number] | undefined {
 }
 
 export function getRange(
-  typeName: string,
   value: unknown,
   valueType?: ParentNodeType
 ): [number, number] | undefined {

@@ -11,6 +11,7 @@ import EditorTabs from '../layout/EditorTabs';
 import { createFileSystem } from '../linter/bridge';
 import type { UpdateModel } from '../linter/types';
 import { isCodeFile } from '../linter/utils';
+import { TypesDetails } from '../typeDetails/TypesDetails';
 import { debounce } from '../util/debounce';
 import { defaultConfig, detailTabs } from './config';
 import { ErrorsViewer } from './ErrorsViewer';
@@ -19,7 +20,6 @@ import Options from './Options';
 import styles from './playground.module.css';
 import PlaygroundEditor from './PlaygroundEditor';
 import type { ErrorGroup, PlaygroundSystem } from './types';
-import { TypesDetails } from './TypesDetails';
 
 function PlaygroundRoot(): JSX.Element {
   const [config, setConfig] = useHashState(defaultConfig);
@@ -159,6 +159,7 @@ function PlaygroundRoot(): JSX.Element {
                 <TypesDetails
                   program={astModel.program}
                   value={astModel.storedTsAST}
+                  onHoverNode={setSelectedRange}
                   cursorPosition={cursorPosition}
                 />
               ) : (
@@ -174,7 +175,7 @@ function PlaygroundRoot(): JSX.Element {
                   }
                   enableScrolling={enableScrolling}
                   cursorPosition={cursorPosition}
-                  onSelectNode={setSelectedRange}
+                  onHoverNode={setSelectedRange}
                 />
               )}
             </div>
