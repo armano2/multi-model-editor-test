@@ -56,7 +56,7 @@ function ASTViewer({
     if (enableScrolling) {
       const delayed = debounce(() => {
         const htmlElement = document.querySelector(
-          `div[data-level="${selectedPath}"]`
+          `div[data-level="${selectedPath}"] > a`
         );
         if (htmlElement) {
           scrollIntoViewIfNeeded(htmlElement);
