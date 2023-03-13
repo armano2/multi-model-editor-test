@@ -46,6 +46,7 @@ export const detailTabs: {
   { value: 'es', label: 'ESTree' },
   { value: 'ts', label: 'TypeScript' },
   { value: 'scope', label: 'Scope' },
+  { value: 'types', label: 'Types' },
 ];
 
 export const defaultEditorOptions: Monaco.editor.IStandaloneEditorConstructionOptions =

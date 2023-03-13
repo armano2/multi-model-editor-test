@@ -33,7 +33,7 @@ export interface ConfigModel {
   code: string;
   ts: string;
   tse: string;
-  showAST?: false | 'ts' | 'es' | 'scope';
+  showAST?: false | 'ts' | 'es' | 'scope' | 'types';
   fileType: 'ts' | 'tsx' | 'js' | 'jsx' | 'd.ts';
 }
 

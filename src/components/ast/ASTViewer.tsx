@@ -46,8 +46,11 @@ function ASTViewer({
       return value.storedTsAST;
     } else if (tab === 'scope') {
       return value.storedScope;
+    } else if (tab === 'es') {
+      return tryToApplyFilter(value.storedAST, filter);
+    } else {
+      return [];
     }
-    return tryToApplyFilter(value.storedAST, filter);
   }, [value, filter, tab]);
 
   const selectedPath = useMemo(() => {

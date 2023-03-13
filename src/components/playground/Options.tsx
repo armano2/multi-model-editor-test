@@ -62,14 +62,7 @@ function Options({
 
   return (
     <>
-      <Expander label="Info">
-        <InputLabel name="theme">
-          <Checkbox
-            name="theme"
-            checked={colorMode === 'dark'}
-            onChange={(value): void => setColorMode(value ? 'dark' : 'light')}
-          />
-        </InputLabel>
+      <Expander label="Editor Options">
         <InputLabel name="TypeScript">
           <Dropdown
             name="ts-version"
@@ -86,8 +79,6 @@ function Options({
             onChange={(tse): void => setConfig({ tse })}
           />
         </InputLabel>
-      </Expander>
-      <Expander label="Options">
         <InputLabel name="Source type">
           <Dropdown
             name="sourceType"
@@ -104,6 +95,8 @@ function Options({
             options={['ts', 'tsx', 'js', 'jsx', 'd.ts']}
           />
         </InputLabel>
+      </Expander>
+      <Expander label="Detail Panel">
         <InputLabel name="Auto scroll">
           <Checkbox
             name="enableScrolling"
@@ -127,6 +120,27 @@ function Options({
         <ActionLabel name="Report as Issue" onClick={openIssue}>
           <ExternalLinkIcon />
         </ActionLabel>
+      </Expander>
+      <Expander label="Debug">
+        <InputLabel name="Use dark mode">
+          <Checkbox
+            name="theme"
+            checked={colorMode === 'dark'}
+            onChange={(value): void => setColorMode(value ? 'dark' : 'light')}
+          />
+        </InputLabel>
+        <InputLabel name="vfs instance">
+          <code>window.system</code>
+        </InputLabel>
+        <InputLabel name="monaco instance">
+          <code>window.monaco</code>
+        </InputLabel>
+        <InputLabel name="typescript">
+          <code>window.ts</code>
+        </InputLabel>
+        <InputLabel name="esquery">
+          <code>window.esquery</code>
+        </InputLabel>
       </Expander>
     </>
   );

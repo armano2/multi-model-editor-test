@@ -21,6 +21,7 @@ function readShowAST(value: string | null): ConfigModel['showAST'] {
     case 'es':
     case 'ts':
     case 'scope':
+    case 'types':
       return value;
   }
   return value ? 'es' : false;
