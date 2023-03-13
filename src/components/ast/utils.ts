@@ -49,10 +49,25 @@ export function getNodeType(
   propName?: string
 ): ParentNodeType {
   if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
-    if ('childScopes' in value && '$id' in value && 'type' in value) {
-      return 'scope';
-    } else if (isESNode(value)) {
+    if (isESNode(value)) {
       return 'esNode';
+    } else if ('$id' in value && 'childScopes' in value && 'type' in value) {
+      return 'scope';
+    } else if (
+      'references' in value &&
+      'identifiers' in value &&
+      'name' in value
+    ) {
+      return 'scopeVariable';
+    } else if ('$id' in value && 'type' in value && 'node' in value) {
+      return 'scopeDefinition';
+    } else if (
+      '$id' in value &&
+      'resolved' in value &&
+      'identifier' in value &&
+      'from' in value
+    ) {
+      return 'scopeReference';
     } else if ('kind' in value && 'pos' in value && 'flags' in value) {
       return 'tsNode';
     } else if ('getBaseTypes' in value && value.getBaseTypes != null) {
@@ -83,19 +98,30 @@ export function getTypeName(
   valueType?: ParentNodeType
 ): string | undefined {
   if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
-    if (valueType === 'esNode') {
-      return String(value.type);
-    } else if (valueType === 'tsNode') {
-      return tsEnumValue('SyntaxKind', value.kind);
-    } else if (valueType === 'scope') {
-      return `${ucFirst(String(value.type))}Scope`;
-    } else if (valueType === 'tsType') {
-      return '[Type]';
-    } else if (valueType === 'tsSymbol') {
-      return '[Symbol]';
-    } else if (valueType === 'tsFlow') {
-      return '[FlowNode]';
+    switch (valueType) {
+      case 'esNode':
+        return String(value.type);
+      case 'tsNode':
+        return tsEnumValue('SyntaxKind', value.kind);
+      case 'scope':
+        return `${ucFirst(String(value.type))}Scope$${String(value.$id)}`;
+      case 'scopeDefinition':
+        return `Definition#${String(value.type)}$${String(value.$id)}`;
+      case 'scopeVariable':
+        return `Variable#${String(value.name)}$${String(value.$id)}`;
+      case 'scopeReference':
+        return `Reference#${String(
+          isRecord(value.identifier) ? value.identifier.name : 'unknown'
+        )}$${String(value.$id)}`;
+      case 'tsType':
+        return '[Type]';
+      case 'tsSymbol':
+        return '[Symbol]';
+      case 'tsFlow':
+        return '[FlowNode]';
     }
+  } else if (typeName !== 'Array') {
+    return typeName;
   }
   return undefined;
 }
@@ -144,6 +170,17 @@ export function getTooltipLabel(
   return undefined;
 }
 
+function getValidRange(range: unknown): [number, number] | undefined {
+  if (
+    Array.isArray(range) &&
+    typeof range[0] === 'number' &&
+    typeof range[1] === 'number'
+  ) {
+    return range as [number, number];
+  }
+  return undefined;
+}
+
 export function getRange(
   typeName: string,
   value: unknown,
@@ -151,16 +188,35 @@ export function getRange(
   valueType?: ParentNodeType
 ): [number, number] | undefined {
   if (typeName === 'Object' && Boolean(value) && isRecord(value)) {
-    if (
-      valueType === 'tsNode' &&
-      typeof value.pos === 'number' &&
-      typeof value.end === 'number'
-    ) {
-      return [value.pos, value.end];
-    } else if (valueType === 'esNode' && Array.isArray(value.range)) {
-      return value.range as [number, number];
-    } else if (valueType === 'scope' && isRecord(value.block)) {
-      return value.block.range as [number, number];
+    switch (valueType) {
+      case 'esNode':
+        return getValidRange(value.range);
+      case 'tsNode':
+        return getValidRange([value.pos, value.end]);
+      case 'scope':
+        if (isRecord(value.block)) {
+          return getValidRange(value.block.range);
+        }
+        break;
+      case 'scopeVariable':
+        if (
+          Array.isArray(value.identifiers) &&
+          value.identifiers.length > 0 &&
+          isRecord(value.identifiers[0])
+        ) {
+          return getValidRange(value.identifiers[0].range);
+        }
+        break;
+      case 'scopeDefinition':
+        if (isRecord(value.node)) {
+          return getValidRange(value.node.range);
+        }
+        break;
+      case 'scopeReference':
+        if (isRecord(value.identifier)) {
+          return getValidRange(value.identifier.range);
+        }
+        break;
     }
   }
   return undefined;
