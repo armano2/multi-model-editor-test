@@ -15,24 +15,49 @@ export interface TypeInfoProps {
 
 interface InfoModel {
   type?: unknown;
-  symbol?: unknown;
-  stringType?: string;
+  typeString?: string;
   contextualType?: unknown;
   contextualTypeString?: string;
+  symbol?: unknown;
   signature?: unknown;
   flowNode?: unknown;
 }
 
-function SimpleField(props: {
-  value: string | undefined;
-  label: string;
-}): JSX.Element {
+interface SimpleFieldProps {
+  readonly value: string | undefined;
+  readonly label: string;
+}
+
+interface TypeGroupProps {
+  readonly label: string;
+  readonly type?: unknown;
+  readonly string?: string;
+  readonly onHoverNode?: OnHoverNodeFn;
+}
+
+function SimpleField(props: SimpleFieldProps): JSX.Element {
   return (
     <div className={astStyles.list}>
       <span className={astStyles.propClass}>{props.label}</span>
       <span>: </span>
       <span className={astStyles.propString}>{String(props.value)}</span>
     </div>
+  );
+}
+
+function TypeGroup(props: TypeGroupProps): JSX.Element {
+  return (
+    <>
+      <h4 className="padding--sm margin--none">{props.label}</h4>
+      {(props.type && (
+        <>
+          {props.string && (
+            <SimpleField value={props.string} label="typeToString()" />
+          )}
+          <ASTViewer onHoverNode={props.onHoverNode} value={props.type} />
+        </>
+      )) || <div className={astStyles.list}>None</div>}
+    </>
   );
 }
 
@@ -51,7 +76,7 @@ export function TypeInfo({
     try {
       const type = typeChecker.getTypeAtLocation(value);
       info.type = type;
-      info.stringType = typeChecker.typeToString(type);
+      info.typeString = typeChecker.typeToString(type);
       info.symbol = type.getSymbol();
       let signature = type.getCallSignatures();
       if (signature.length === 0) {
@@ -99,38 +124,33 @@ export function TypeInfo({
           onHoverNode={onHoverNode}
           value={value}
         />
-        <h4 className="padding--sm margin--none">Type</h4>
-        {(computed.type && (
-          <>
-            <SimpleField value={computed.stringType} label="typeToString()" />
-            <ASTViewer onHoverNode={onHoverNode} value={computed.type} />
-          </>
-        )) || <div className={astStyles.list}>None</div>}
-        <h4 className="padding--sm margin--none">Contextual Type</h4>
-        {(computed.contextualType && (
-          <>
-            <SimpleField
-              value={computed.contextualTypeString}
-              label="typeToString()"
-            />
-            <ASTViewer
-              onHoverNode={onHoverNode}
-              value={computed.contextualType}
-            />
-          </>
-        )) || <div className={astStyles.list}>None</div>}
-        <h4 className="padding--sm margin--none">Symbol</h4>
-        {(computed.symbol && (
-          <ASTViewer onHoverNode={onHoverNode} value={computed.symbol} />
-        )) || <div className={astStyles.list}>None</div>}
-        <h4 className="padding--sm margin--none">Signature</h4>
-        {(computed.signature && (
-          <ASTViewer onHoverNode={onHoverNode} value={computed.signature} />
-        )) || <div className={astStyles.list}>None</div>}
-        <h4 className="padding--sm margin--none">FlowNode</h4>
-        {(computed.flowNode && (
-          <ASTViewer onHoverNode={onHoverNode} value={computed.flowNode} />
-        )) || <div className={astStyles.list}>None</div>}
+        <TypeGroup
+          label="Type"
+          type={computed.type}
+          string={computed.typeString}
+          onHoverNode={onHoverNode}
+        />
+        <TypeGroup
+          label="Contextual Type"
+          type={computed.contextualType}
+          string={computed.contextualTypeString}
+          onHoverNode={onHoverNode}
+        />
+        <TypeGroup
+          label="Symbol"
+          type={computed.symbol}
+          onHoverNode={onHoverNode}
+        />
+        <TypeGroup
+          label="Signature"
+          type={computed.signature}
+          onHoverNode={onHoverNode}
+        />
+        <TypeGroup
+          label="FlowNode"
+          type={computed.flowNode}
+          onHoverNode={onHoverNode}
+        />
       </>
     </div>
   );
