@@ -50,6 +50,12 @@ export function getNodeType(typeName: string, value: unknown): ParentNodeType {
     } else if ('$id' in value && 'childScopes' in value && 'type' in value) {
       return 'scope';
     } else if (
+      'scopes' in value &&
+      'nodeToScope' in value &&
+      'declaredVariables' in value
+    ) {
+      return 'scopeManager';
+    } else if (
       'references' in value &&
       'identifiers' in value &&
       'name' in value
@@ -101,6 +107,8 @@ export function getTypeName(
         return String(value.type);
       case 'tsNode':
         return tsEnumValue('SyntaxKind', value.kind);
+      case 'scopeManager':
+        return 'ScopeManager';
       case 'scope':
         return `${ucFirst(String(value.type))}Scope$${String(value.$id)}`;
       case 'scopeDefinition':
@@ -243,6 +251,12 @@ export function filterProperties(
   switch (type) {
     case 'esNode':
       return key !== 'tokens' && key !== 'comments';
+    case 'scopeManager':
+      return (
+        key !== 'declaredVariables' &&
+        key !== 'nodeToScope' &&
+        key !== 'currentScope'
+      );
     case 'tsNode':
       return (
         key !== 'nextContainer' &&

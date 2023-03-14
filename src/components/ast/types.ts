@@ -14,6 +14,7 @@ export type ParentNodeType =
   | 'tsSignature'
   | 'tsFlow'
   | 'scope'
+  | 'scopeManager'
   | 'scopeVariable'
   | 'scopeDefinition'
   | 'scopeReference'
