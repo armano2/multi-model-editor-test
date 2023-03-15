@@ -242,7 +242,7 @@ export function filterProperties(
 ): boolean {
   if (
     value === undefined ||
-    // typeof value === 'function' ||
+    typeof value === 'function' ||
     key.startsWith('_')
   ) {
     return false;
