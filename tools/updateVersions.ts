@@ -46,10 +46,10 @@ async function main(): Promise<void> {
   const packages = await Promise.all([
     getPackageStats('@typescript-eslint/eslint-plugin', '^5.0.0'),
     getPackageStats('typescript', '^4.1.5'),
-    getPackageStats('eslint', '^6.0.0 || ^7.0.0 || ^8.0.0'),
+    // getPackageStats('eslint', '^6.0.0 || ^7.0.0 || ^8.0.0'),
   ]);
 
-  const [eslintPlugin, typescript, eslint] = packages;
+  const [eslintPlugin, typescript] = packages;
   const fileUrl = new URL(
     '../src/components/playground/packageVersions.json',
     import.meta.url
@@ -57,7 +57,7 @@ async function main(): Promise<void> {
 
   await fs.writeFile(
     fileUrl,
-    JSON.stringify({ eslintPlugin, typescript, eslint }, null, 2) + '\n',
+    JSON.stringify({ eslintPlugin, typescript }, null, 2) + '\n',
     'utf8'
   );
 }

@@ -12,10 +12,12 @@ export interface PathMeta {
   file: string;
 }
 
-export type ImporterOverrides = Record<
-  string,
-  (i: Importer, meta: PathMeta) => Promise<unknown> | unknown
->;
+export type ImporterOverride = (
+  i: Importer,
+  meta: PathMeta
+) => Promise<unknown> | unknown;
+
+export type ImporterOverrides = Record<string, ImporterOverride>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-empty-function
 const AsyncFunction = (async function () {} as Object).constructor;
@@ -29,10 +31,14 @@ export class Importer {
     this.moduleOverrides = moduleOverrides;
   }
 
+  registerModuleOverride(name: string, override: ImporterOverride): void {
+    this.moduleOverrides[name] = override;
+  }
+
   isValidExtension(url: string): boolean {
     const lowerCaseUrl = url.toLowerCase();
 
-    return /(\/\+esm|\.json)$/.test(lowerCaseUrl);
+    return url.startsWith('http') || /(\/\+esm|\.json)$/.test(lowerCaseUrl);
   }
 
   parsePathMeta(url: string): PathMeta | null {
@@ -80,7 +86,9 @@ export class Importer {
       }
     } catch (err) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions,no-console
-      console.error(`Error loading module ${this.absolute + url}: ${err}`);
+      console.error(`Error loading module ${this.makeAbsoluteUrl(url)}`);
+      // eslint-disable-next-line no-console
+      console.error(err);
       throw err;
     }
   }
@@ -101,8 +109,13 @@ export class Importer {
     useCache?: boolean
   ): Promise<T> {
     const file = await this.importFile(url, useCache);
+    // console.log('importDefault', file, url);
+    // if ('__esModule' in file) {
+    //   // @ts-expect-error this is unsafe
+    //   return (file.default as T) ?? file;
+    // }
     // @ts-expect-error this is unsafe
-    return file.default ?? file;
+    return (file.default as T) ?? file;
   }
 
   async importFile<T = Record<string, unknown>>(
@@ -133,20 +146,54 @@ export class Importer {
     return executedModule as T;
   }
 
+  private parseImportSpecifier(name: string): {
+    type: 'star' | 'normal';
+    value: string;
+  } {
+    name = name.trim();
+    if (name.startsWith('{')) {
+      return {
+        type: 'normal',
+        value: name.replace(/\s+as\s+/g, ':'),
+      };
+    }
+    if (name.startsWith('*')) {
+      return {
+        type: 'star',
+        value: name.replace(/^\*\s*as/g, ''),
+      };
+    }
+    return {
+      type: 'normal',
+      value: name,
+    };
+  }
+
   private fixESMFiles(source: string, url: string): string {
+    // This is far from perfect, we need to find a better way to do this
     const parsedSource = source
       .replace(
-        /import\s+([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
-        (match, name, url) => {
-          return `const ${name} = await ___importDefault('${url}');`;
+        /import\s*([^"'\n]+)\s*from\s*["'](\/npm\/[^"']+)["']\s*;?/g,
+        (match, names: string, url) => {
+          const importValue = this.parseImportSpecifier(names);
+          if (importValue.type === 'star') {
+            return `const ${importValue.value} = await ___importFile('${url}');`;
+          }
+          return `const ${importValue.value} = await ___importDefault('${url}');`;
         }
       )
-      .replace(
-        /import\s*\*\s*as\s*([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
-        (match, name, url) => {
-          return `const ${name} = await ___importFile('${url}');`;
-        }
-      )
+      // .replace(
+      //   /import\s+([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
+      //   (match, name, url) => {
+      //     return `const ${name} = await ___importDefault('${url}');`;
+      //   }
+      // )
+      // .replace(
+      //   /import\s*\*\s*as\s*([A-Za-z$_]\S*)\s+from\s*["']([^"']+)["'][\s;]*/g,
+      //   (match, name, url) => {
+      //     return `const ${name} = await ___importFile('${url}');`;
+      //   }
+      // )
       .replace(
         /export\s+default\s*([A-Za-z$_][^\s;]*)/g,
         (match, name: string) => {
@@ -164,7 +211,10 @@ export class Importer {
             const exportParts =
               /([A-Za-z$_]\S*)\s+as\s+([A-Za-z$_][^\s;]*)/.exec(name);
             if (exportParts) {
-              return `exports.${exportParts[2].trim()} = ${exportParts[1].trim()};`;
+              const part2 = exportParts[2].trim();
+              const moduleIm =
+                part2 === 'default' ? `exports.__esModule = true;` : '';
+              return `exports.${exportParts[2].trim()} = ${exportParts[1].trim()};${moduleIm}`;
             }
             return `exports.${name.trim()} = ${name.trim()};`;
           })
@@ -173,6 +223,13 @@ export class Importer {
       .replace(/\/\/# sourceMappingURL=\/.+/, '');
 
     return parsedSource + `\n\n//# sourceURL=${this.absolute}${url}`;
+  }
+
+  private makeAbsoluteUrl(url: string): string {
+    if (url.startsWith('http')) {
+      return url;
+    }
+    return this.absolute + url;
   }
 
   private async cachedRequest(
@@ -187,9 +244,9 @@ export class Importer {
     }
 
     // eslint-disable-next-line no-console
-    console.log('Loading file:', this.absolute + url);
+    console.log('Loading file:', this.makeAbsoluteUrl(url));
 
-    const response = await fetch(this.absolute + url, {
+    const response = await fetch(this.makeAbsoluteUrl(url), {
       method: 'GET',
     });
     if (!response.ok) {

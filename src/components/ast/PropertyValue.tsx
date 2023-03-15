@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 
+import Link from '../inputs/Link';
 import styles from './ASTViewer.module.css';
 import { objType } from './utils';
-import Link from '../inputs/Link';
 
 export interface PropertyValueProps {
   readonly value: unknown;
@@ -93,7 +93,7 @@ function PropertyValue({ value }: PropertyValueProps): JSX.Element {
       <span className={model.className}>
         {!expand ? `${model.shortValue}...` : model.value}{' '}
         <Link
-          onClick={(e) => {
+          onClick={(e): void => {
             e.preventDefault();
             setExpand((expand) => !expand);
           }}

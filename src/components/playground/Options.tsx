@@ -79,7 +79,9 @@ function Options({
             onChange={(tse): void => setConfig({ tse })}
           />
         </InputLabel>
-        <InputLabel name="Eslint">TODO: eslint4b (7.32.0)</InputLabel>
+        <InputLabel name="Eslint">
+          8.35.0 {/*process.env.ESLINT_VERSION*/}
+        </InputLabel>
         <InputLabel name="Source type">
           <Dropdown
             name="sourceType"

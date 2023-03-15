@@ -1,6 +1,8 @@
 node_modules
 dist
+public/play/
+eslint4b/mocks
+eslint4b/src
 
 .idea
 .vscode
-

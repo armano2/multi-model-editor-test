@@ -1,4 +1,5 @@
 dist
+public/play/
 .vs
 .idea
 node_modules

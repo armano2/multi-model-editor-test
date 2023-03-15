@@ -43,12 +43,13 @@ export const moduleOverrides: ImporterOverrides = {
     return i.importDefault(`/npm/tsutils@${meta.version}/util/index.js/+esm`);
   },
   'eslint/use-at-your-own-risk': async (i) => {
-    // TODO: use window.eslint
-    const file = await i.importDefault(
-      '/npm/eslint4b@7.32.0/dist/core-rules.js'
+    const eslintFile = await i.importFile(
+      document.location.origin + '/play/eslint.js',
+      false
     );
-
-    return { builtinRules: { get: (name: string): unknown => file[name] } };
+    return {
+      builtinRules: eslintFile.rules,
+    };
   },
   globals: (i, meta) => {
     return i.importFile(`/npm/globals@${meta.version}/globals.json`);
@@ -63,19 +64,11 @@ export const moduleOverrides: ImporterOverrides = {
     return i.importFile(`/npm/type-check@${meta.version}/lib/index.js`);
   },
   eslint: async (i) => {
-    // TODO: use window.eslint
-    const Linter = await i.importDefault('/npm/eslint4b@7.32.0/dist/linter.js');
-    const rules = await i.importDefault(
-      '/npm/eslint4b@7.32.0/dist/core-rules.js'
+    const eslintFile = await i.importFile(
+      document.location.origin + '/play/eslint.js',
+      false
     );
-    class RuleTester {}
-    class SourceCode {}
-    return {
-      SourceCode,
-      Linter,
-      RuleTester,
-      rules,
-    };
+    return eslintFile;
   },
   '@typescript-eslint/utils': (i, meta) => {
     return i.importDefault(
@@ -98,8 +91,8 @@ export const moduleOverrides: ImporterOverrides = {
     );
     return { visitorKeys: pkg.visitorKeys };
   },
-  debug: (i) => {
-    return i.importDefault('/npm/debug@4.3.4/src/browser.js');
+  debug: async (i, meta) => {
+    return i.importFile(`/npm/debug@${meta.version}/src/browser.js`);
   },
   '@typescript-eslint/typescript-estree': async (i, meta) => {
     const astConverter = await i.importFile<{ astConverter: unknown }>(

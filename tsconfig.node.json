@@ -17,5 +17,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "./tools"]
+  "include": ["vite.config.ts", "./tools", "./eslint4b"]
 }
