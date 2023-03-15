@@ -33,6 +33,13 @@ export function getEslintSchema(linter: LinterResult): JSONSchema4 {
   return {
     type: 'object',
     properties: {
+      extends: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: linter.presets,
+        },
+      },
       rules: {
         type: 'object',
         properties: properties,

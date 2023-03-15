@@ -23,6 +23,7 @@ export interface EslintUtilsModule {
   rules: typeof rules;
   Linter: typeof TSESLint.Linter;
   eslintRules: typeof rules;
+  presets: typeof configs;
 }
 
 export async function importEslintUtils(
@@ -47,6 +48,7 @@ export async function importEslintUtils(
     visitorKeys: result[1].visitorKeys,
     astConverter: result[2].astConverter,
     rules: result[3].rules,
+    presets: result[3].configs,
     Linter: result[4].Linter,
     eslintRules: result[4].rules,
   };

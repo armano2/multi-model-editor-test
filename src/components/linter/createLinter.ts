@@ -29,6 +29,7 @@ export type LinterOnLint = (
 
 export interface LinterResult {
   rules: RulesMap;
+  presets: string[];
   triggerFix: (filename: string) => TSESLint.Linter.FixReport | undefined;
   triggerLint: (filename: string) => void;
   lintAllFiles: () => void;
@@ -46,6 +47,15 @@ export function createLinter(
   const eslintConfig = { ...defaultEslintConfig };
 
   const onLintEvents: Set<LinterOnLint> = new Set();
+
+  // TODO: add support for this
+  const presets: string[] = [
+    'eslint:all',
+    'eslint:recommended',
+    ...Object.keys(utils.presets).map((name) => {
+      return `plugin:@typescript-eslint/${name}`;
+    }),
+  ];
 
   const linter = new utils.Linter();
 
@@ -162,6 +172,7 @@ export function createLinter(
 
   return {
     rules,
+    presets,
     lintAllFiles,
     triggerFix,
     triggerLint,
