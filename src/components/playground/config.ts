@@ -28,16 +28,25 @@ export const tsVersions: string[] = ['next', ...versions.typescript];
 
 export const esTsVersions: string[] = [...versions.eslintPlugin];
 
-export const detailTabs: {
-  value: Exclude<ConfigModel['showAST'], undefined>;
-  label: string;
-}[] = [
-  { value: false, label: 'Errors' },
-  { value: 'es', label: 'ESTree' },
-  { value: 'ts', label: 'TypeScript' },
-  { value: 'scope', label: 'Scope' },
-  { value: 'types', label: 'Types' },
+export const detailTabs = [
+  { value: false as const, label: 'Errors' },
+  { value: 'es' as const, label: 'ESTree' },
+  { value: 'ts' as const, label: 'TypeScript' },
+  { value: 'scope' as const, label: 'Scope' },
+  { value: 'types' as const, label: 'Types' },
 ];
+
+export const fileTypes = [
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'd.ts',
+  'cjs',
+  'mjs',
+  'cts',
+  'mts',
+] as const;
 
 export const defaultEditorOptions: Monaco.editor.IStandaloneEditorConstructionOptions =
   {

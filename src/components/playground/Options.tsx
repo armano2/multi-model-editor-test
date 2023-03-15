@@ -10,7 +10,7 @@ import Tooltip from '../inputs/Tooltip';
 import ActionLabel from '../layout/ActionLabel';
 import Expander from '../layout/Expander';
 import InputLabel from '../layout/InputLabel';
-import { esTsVersions, tsVersions } from './config';
+import { esTsVersions, fileTypes, tsVersions } from './config';
 import { createMarkdown, createMarkdownParams } from './lib/markdown';
 import type { ConfigModel } from './types';
 
@@ -95,7 +95,7 @@ function Options({
             name="fileType"
             value={config.fileType ?? 'ts'}
             onChange={(fileType): void => setConfig({ fileType })}
-            options={['ts', 'tsx', 'js', 'jsx', 'd.ts']}
+            options={fileTypes}
           />
         </InputLabel>
       </Expander>

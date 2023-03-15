@@ -27,6 +27,7 @@ module.exports = {
     //
     // our plugin :D
     //
+    '@typescript-eslint/no-duplicate-imports': 'error',
 
     '@typescript-eslint/ban-ts-comment': [
       'error',

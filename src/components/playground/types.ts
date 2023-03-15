@@ -1,6 +1,8 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 import type * as ts from 'typescript';
 
+import type { detailTabs, fileTypes } from './config';
+
 export interface ErrorItem {
   message: string;
   location: string;
@@ -33,8 +35,8 @@ export interface ConfigModel {
   code: string;
   ts: string;
   tse: string;
-  showAST?: false | 'ts' | 'es' | 'scope' | 'types';
-  fileType: 'ts' | 'tsx' | 'js' | 'jsx' | 'd.ts';
+  showAST?: (typeof detailTabs)[number]['value'];
+  fileType: (typeof fileTypes)[number];
 }
 
 export type PlaygroundSystem = ts.System &

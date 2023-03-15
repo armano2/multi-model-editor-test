@@ -4,10 +4,10 @@ import type { PlaygroundSystem } from '../types';
 import { applyEdit } from './utils';
 
 export function determineLanguage(file: string): string {
-  if (/\.ts(x)?$/.test(file)) {
+  if (/\.[mc]?ts(x)?$/.test(file)) {
     return 'typescript';
   }
-  if (/\.js(x)?$/.test(file)) {
+  if (/\.[mc]?js(x)?$/.test(file)) {
     return 'javascript';
   }
   if (/\.(json|eslintrc)$/.test(file)) {

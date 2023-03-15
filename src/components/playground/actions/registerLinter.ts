@@ -2,8 +2,7 @@ import type * as Monaco from 'monaco-editor';
 
 import type { LinterResult } from '../../linter/createLinter';
 import type { LintCodeAction } from './utils';
-import { createEditOperation } from './utils';
-import { createURI } from './utils';
+import { createEditOperation, createURI } from './utils';
 
 export function registerLinter(
   monaco: typeof Monaco,

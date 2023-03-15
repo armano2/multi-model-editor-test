@@ -2,8 +2,7 @@ import { createSystem } from '@typescript/vfs';
 import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
-import type { PlaygroundSystem } from '../playground/types';
-import type { ConfigModel } from '../playground/types';
+import type { ConfigModel, PlaygroundSystem } from '../playground/types';
 import { debounce } from '../util/debounce';
 
 export async function addLibFiles(

@@ -4,13 +4,13 @@ import { isCodeFile } from '../../linter/utils';
 import { debounce } from '../../util/debounce';
 import type { ErrorGroup, PlaygroundSystem } from '../types';
 import type { LintCodeAction } from './utils';
-import { tryParseEslintModule } from './utils';
 import {
   applyEdit,
   createEditAction,
   createURI,
   normalizeMarkerCode,
   normalizeMarkerGroup,
+  tryParseEslintModule,
 } from './utils';
 
 export function registerEvents(
